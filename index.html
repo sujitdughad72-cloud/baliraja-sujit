@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>बळीराजा - महाराष्ट्राची आपली बाजारपेठ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Marathi:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              paithani: {
+                saffron: '#FF9933',
+                gold: '#D4AF37',
+                emerald: '#043927',
+                maroon: '#800000',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        body { font-family: 'Noto Sans Marathi', 'Inter', sans-serif; }
+        .paithani-pattern {
+            background-color: #ffffff;
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+        }
+        .btn-saffron {
+            background: linear-gradient(135deg, #FF9933 0%, #FFCC33 100%);
+            box-shadow: 0 4px 15px rgba(255, 153, 51, 0.3);
+        }
+        .card-paithani {
+            border-top: 4px solid #FF9933;
+            border-bottom: 2px solid #D4AF37;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-[#FFFBF2] text-slate-900 paithani-pattern">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

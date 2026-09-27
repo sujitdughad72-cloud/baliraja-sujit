@@ -1,0 +1,204 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Application user profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string", "description": "Full name" },
+        "role": { "type": "string", "enum": ["farmer", "buyer", "admin"], "description": "User role" },
+        "phone": { "type": "string", "description": "Phone number" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "secretKey": { "type": "string", "description": "Secret key for admin access" }
+      },
+      "required": ["uid", "name", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Agricultural product for sale",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Product name in Marathi" },
+        "category": { "type": "string", "description": "Category (Vegetables, Fruits, etc.)" },
+        "price": { "type": "number", "description": "Price per unit" },
+        "unit": { "type": "string", "description": "Unit of measurement (kg, dozen, etc.)" },
+        "farmerName": { "type": "string", "description": "Name of the farmer" },
+        "farmerUid": { "type": "string", "description": "UID of the farmer who listed it" },
+        "location": { "type": "string", "description": "Location of the farm" },
+        "image": { "type": "string", "format": "uri", "description": "Product image URL" },
+        "description": { "type": "string", "description": "Detailed description" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["name", "category", "price", "unit", "farmerUid"]
+    },
+    "Alert": {
+      "title": "Alert",
+      "description": "System alert or notification",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["power", "weather", "irrigation", "market"], "description": "Type of alert" },
+        "title": { "type": "string", "description": "Alert title" },
+        "message": { "type": "string", "description": "Alert message" },
+        "time": { "type": "string", "description": "Display time (e.g. 'Just now')" },
+        "severity": { "type": "string", "enum": ["low", "medium", "high"], "description": "Alert severity" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["type", "title", "message", "severity"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order for products",
+      "type": "object",
+      "properties": {
+        "buyerUid": { "type": "string", "description": "UID of the buyer" },
+        "buyerName": { "type": "string", "description": "Name of the buyer" },
+        "items": { "type": "array", "description": "List of ordered items" },
+        "total": { "type": "number", "description": "Total order amount" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "shipped", "delivered", "cancelled"], "description": "Order status" },
+        "paymentMethod": { "type": "string", "enum": ["online", "cod"], "description": "Payment method" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Order creation timestamp" },
+        "farmerUids": { "type": "array", "description": "List of farmer UIDs involved in this order" }
+      },
+      "required": ["buyerUid", "items", "total", "status", "paymentMethod", "farmerUids"]
+    },
+    "OfficialCropReport": {
+      "title": "OfficialCropReport",
+      "description": "Official government crop report data",
+      "type": "object",
+      "properties": {
+        "reportDate": { "type": "string", "format": "date", "description": "Date of the official report" },
+        "rabiDistribution": { "type": "array", "description": "Rabi crop distribution" },
+        "summerDistribution": { "type": "array", "description": "Summer crop distribution" },
+        "regionalStatus": { "type": "object", "description": "Status by region" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["reportDate", "rabiDistribution", "summerDistribution", "regionalStatus"]
+    },
+    "MandiData": {
+      "title": "MandiData",
+      "description": "Verified market price data for a specific crop/region",
+      "type": "object",
+      "properties": {
+        "crop": { "type": "string" },
+        "state": { "type": "string" },
+        "district": { "type": "string" },
+        "date": { "type": "string" },
+        "mandis": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "market_name": { "type": "string" },
+              "modal_price": { "type": "number" },
+              "min_price": { "type": "number" },
+              "max_price": { "type": "number" },
+              "arrival_date": { "type": "string" },
+              "source": { "type": "string" },
+              "is_verified": { "type": "boolean" }
+            }
+          }
+        }
+      },
+      "required": ["crop", "state", "district", "date", "mandis"]
+    },
+    "Chat": {
+      "title": "Chat",
+      "description": "Conversation between two users",
+      "type": "object",
+      "properties": {
+        "participants": { "type": "array", "description": "List of user UIDs in the chat" },
+        "participantNames": { "type": "object", "description": "Map of UID to name for quick display" },
+        "lastMessage": { "type": "string", "description": "The text of the last message sent" },
+        "lastMessageAt": { "type": "string", "format": "date-time", "description": "Timestamp of the last message" },
+        "unreadCount": { "type": "object", "description": "Map of UID to unread message count" }
+      },
+      "required": ["participants", "lastMessageAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Individual message in a chat",
+      "type": "object",
+      "properties": {
+        "chatId": { "type": "string", "description": "ID of the parent chat" },
+        "senderUid": { "type": "string", "description": "UID of the sender" },
+        "text": { "type": "string", "description": "Message content" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Message timestamp" },
+        "read": { "type": "boolean", "description": "Whether the message has been read" }
+      },
+      "required": ["chatId", "senderUid", "text", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profiles indexed by UID"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Marketplace products"
+    },
+    "/alerts/{alertId}": {
+      "schema": "Alert",
+      "description": "System alerts and notifications"
+    },
+    "/schedules/{docId}": {
+      "schema": { "type": "object", "properties": { "schedule": { "type": "array" } } },
+      "description": "Electricity schedules"
+    },
+    "/cropInsights/{insightId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "cropName": { "type": "string" },
+          "region": { "type": "string" },
+          "farmerCount": { "type": "integer" },
+          "percentage": { "type": "number" },
+          "riskLevel": { "type": "string", "enum": ["Low", "Medium", "High"] }
+        }
+      },
+      "description": "Aggregated crop distribution data"
+    },
+    "/farmerPlans/{planId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "farmerUid": { "type": "string" },
+          "plannedCrop": { "type": "string" },
+          "season": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "description": "Farmers' future crop plans"
+    },
+    "/settings/{docId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "enableOnlinePayment": { "type": "boolean" }
+        }
+      },
+      "description": "Global application settings"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer orders"
+    },
+    "/officialReports/{reportId}": {
+      "schema": "OfficialCropReport",
+      "description": "Official crop reports from government sources"
+    },
+    "/verified_mandi_prices/{docId}": {
+      "schema": "MandiData",
+      "description": "Verified market price data used as fallback"
+    },
+    "/chats/{chatId}": {
+      "schema": "Chat",
+      "description": "Conversations between users"
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Messages within a conversation"
+    }
+  }
+}

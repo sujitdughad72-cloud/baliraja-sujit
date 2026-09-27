@@ -1,0 +1,395 @@
+{
+  "brand": "BaliRaja",
+  "tagline": "Premium Agri",
+  "nav": {
+    "home": "Home",
+    "buy": "Marketplace",
+    "messages": "Chat",
+    "sell": "Sell",
+    "insights": "Crop Advice",
+    "services": "Services",
+    "ai": "AI Help",
+    "admin": "Admin",
+    "mandi": "Mandi Rates"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "welcome": "Ram Ram,",
+    "please_login": "Please login.",
+    "please_login_farmer": "Please login as a farmer.",
+    "admin_only": "Admin access only."
+  },
+  "common": {
+    "loading": "BaliRaja is loading...",
+    "go_home": "Go to Home",
+    "all_rights_reserved": "All rights reserved.",
+    "footer_description": "Our goal is to empower farmers through technology and direct trade.",
+    "footer_links": "Links",
+    "footer_info": "Information",
+    "footer_info_desc": "A dedicated platform built for farmers in Maharashtra.",
+    "view_all": "View All",
+    "buy_now": "Buy Now",
+    "fill_sample": "Fill Sample"
+  },
+  "hero": {
+    "motto": "Happy Farmer, Happy World!",
+    "title_main": "BaliRaja",
+    "title_sub": "Digital Market",
+    "description": "A dedicated platform for modern technology and direct trade for the hardworking farmers of Maharashtra.",
+    "quick_actions": {
+      "sell": "Sell Crop",
+      "buy": "Marketplace",
+      "ai": "AI Help"
+    },
+    "featured": {
+      "title": "Featured Crops",
+      "subtitle": "Direct from farm to consumers",
+      "per_quintal": "/quintal"
+    },
+    "stats": {
+      "farmers": "Farmers",
+      "live": "Live",
+      "market_rates": "Market Rates",
+      "ai_help": "AI Help"
+    }
+  },
+  "marketplace": {
+    "title": "Marketplace",
+    "subtitle": "Pure and fresh agricultural products from every corner of Maharashtra",
+    "search_placeholder": "What are you looking for? e.g. Mango, Jaggery...",
+    "filters": {
+      "title": "Advanced Filters",
+      "price_range": "Price Range",
+      "location": "Location",
+      "location_placeholder": "e.g. Nashik, Pune...",
+      "reset": "Reset Filters"
+    },
+    "categories": {
+      "all": "All Crops",
+      "vegetables": "Vegetables",
+      "fruits": "Fruits",
+      "grains": "Grains",
+      "spices": "Spices"
+    },
+    "trends": {
+      "title": "Today's Market Trends",
+      "source": "* Source: Major Agricultural Produce Market Committees (APMC) in Maharashtra"
+    },
+    "product": {
+      "farmer": "Farmer",
+      "add_to_cart": "Add to Cart",
+      "buy_now": "Buy Now",
+      "per": "Per"
+    },
+    "no_products": "No products found!",
+    "view_all_crops": "View all crops"
+  },
+  "bottom_nav": {
+    "home": "Home",
+    "market": "Market",
+    "messages": "Chat",
+    "sell": "Sell",
+    "advice": "Advice",
+    "services": "Services",
+    "ai": "AI"
+  },
+  "login": {
+    "title": "Welcome to Paithani Agri",
+    "subtitle": "Digital Empowerment for Farmers",
+    "i_am_farmer": "I am a Farmer",
+    "i_am_buyer": "I am a Buyer",
+    "phone_placeholder": "Enter Phone Number",
+    "send_otp": "Send OTP",
+    "enter_otp": "Enter OTP",
+    "complete_login": "Complete Login",
+    "google_login": "Login with Google",
+    "error_phone": "Please enter a valid phone number",
+    "error_otp": "Please enter a valid OTP",
+    "success_login": "Login successful!"
+  },
+  "farmer": {
+    "greeting": "Hello, {{name}}!",
+    "subtitle": "Manage your farm products and orders",
+    "add_new_product": "Add New Product",
+    "stats": {
+      "total_sales": "Total Sales",
+      "active_listings": "Active Listings",
+      "today_orders": "Today's Orders",
+      "rating": "Farmer Rating",
+      "stable": "Stable",
+      "excellent": "Excellent"
+    },
+    "my_listings": "My Listings",
+    "orders": "Orders",
+    "sales_chart": "Sales Performance",
+    "active": "Active",
+    "delete_confirm": "Are you sure you want to delete this product?",
+    "no_listings": "You haven't listed any products yet.",
+    "add_first_product": "Add your first product now",
+    "orders_title": "Incoming Orders",
+    "modal": {
+      "title": "Register New Product",
+      "subtitle": "Fill in the details to list your crop",
+      "product_name": "Product Name",
+      "product_name_placeholder": "e.g. Fresh Red Onions",
+      "location": "Location",
+      "category": "Category",
+      "unit": "Unit",
+      "description": "Description",
+      "description_placeholder": "Describe your product quality, variety, etc.",
+      "product_image": "Product Image",
+      "uploading": "Uploading...",
+      "change_photo": "Change Photo",
+      "select_photo": "Select Photo",
+      "photo_hint": "Max size 1MB. Use high quality images.",
+      "submit": "List Product",
+      "price": "Price (₹)",
+      "success_add": "Product listed successfully!",
+      "success_delete": "Product deleted successfully!"
+    },
+    "default_name": "Farmer Friend"
+  },
+  "units": {
+    "kg": "kg",
+    "dozen": "dozen",
+    "quintal": "quintal",
+    "piece": "piece"
+  },
+  "categories": {
+    "all": "All Crops",
+    "vegetables": "Vegetables",
+    "fruits": "Fruits",
+    "grains": "Grains",
+    "spices": "Spices",
+    "others": "Others"
+  },
+  "ai_assistant": {
+    "title": "Paithani AI Assistant",
+    "placeholder": "Ask anything about farming...",
+    "weather": "Today's Weather",
+    "crop_advice": "Crop Advice",
+    "market_rates": "Market Rates",
+    "missing_api_key": "Sorry, API Key is missing!",
+    "tools": {
+      "chat": "Chat",
+      "market": "Market",
+      "health": "Health"
+    }
+  },
+  "user_profile": {
+    "title": "My Profile",
+    "my_info": "My Information",
+    "history": "Transaction History",
+    "my_farm": "My Farm",
+    "settings": "Settings",
+    "language": "Language",
+    "logout": "Logout"
+  },
+  "cart": {
+    "title": "Your Bag ({{count}})",
+    "quantity": "Quantity: {{quantity}} {{unit}}",
+    "book_order": "Book Order",
+    "empty": "Your cart is empty"
+  },
+  "alerts": {
+    "title": "Alert Center",
+    "subtitle": "Important updates and warnings",
+    "new_tag": "{{count}} New",
+    "view_all": "View All Notifications",
+    "severity": {
+      "high": "Urgent",
+      "medium": "Medium",
+      "low": "Normal"
+    },
+    "admin": {
+      "add_alert": "Add New Alert",
+      "edit_alert": "Edit Alert",
+      "delete_alert": "Delete Alert",
+      "alert_type": "Alert Type",
+      "alert_title": "Title",
+      "alert_message": "Message",
+      "alert_severity": "Severity",
+      "alert_time": "Display Time",
+      "save_alert": "Save Alert",
+      "confirm_delete_alert": "Are you sure you want to delete this alert?"
+    },
+    "mock": {
+      "power_title": "Power ON",
+      "power_message": "Power supply has started in your area. Great time to start irrigation.",
+      "power_time": "Just now",
+      "weather_title": "Rain Alert",
+      "weather_message": "Light rain expected in the next 2 hours. Take care of crops.",
+      "weather_time": "10 min ago",
+      "irrigation_title": "Irrigation Tip",
+      "irrigation_message": "Power will be available tomorrow from 6 AM to 10 AM, plan irrigation.",
+      "irrigation_time": "1 hour ago"
+    }
+  },
+  "smart_insights": {
+    "title": "Smart Crop Advisory Engine",
+    "subtitle": "Avoid losses due to market oversupply. Check crop distribution in your area and get expert AI advice.",
+    "region_selector": {
+      "label": "Select Region",
+      "maharashtra": "Maharashtra",
+      "pune": "Pune",
+      "nashik": "Nashik",
+      "solapur": "Solapur"
+    },
+    "oversupply_alert": {
+      "title": "Oversupply Risk Alert",
+      "message": "Production of {{crops}} is very high in your area. This may lead to a price drop in the market.",
+      "view_alternatives": "View Alternative Crops"
+    },
+    "distribution": {
+      "title": "Crop Distribution"
+    },
+    "farmer_count": {
+      "title": "Farmer Count"
+    },
+    "plan": {
+      "title": "Tell AI Your Plan",
+      "label": "Which crop are you planning to grow?",
+      "placeholder": "e.g. Onion, Soybean, Cotton",
+      "get_advisory": "Get AI Advisory",
+      "save_plan": "Save Plan",
+      "thinking": "Thinking...",
+      "saving": "Saving...",
+      "success": "Your plan has been saved successfully!"
+    },
+    "advisory": {
+      "title": "AI Advisory Report",
+      "risk_analysis": "Risk Analysis",
+      "advice": "AI Advice",
+      "alternative_crops": "Alternative Crops",
+      "demand_gap": "Demand Gap"
+    }
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "subtitle": "System Management and Control",
+    "panels": {
+      "users": "User Management",
+      "products": "Marketplace Management",
+      "infrastructure": "Services & Schedule"
+    },
+    "stats": {
+      "farmers": "Total Farmers",
+      "crops": "Total Crops",
+      "revenue": "Total Revenue (₹)"
+    },
+    "charts": {
+      "crop_distribution": "Crop Distribution"
+    },
+    "recent_activities": {
+      "title": "Recent Activities",
+      "new_crop": "New crop added: {{name}}",
+      "new_tag": "New"
+    },
+    "search_placeholder": "Search...",
+    "table": {
+      "user": "User",
+      "role": "Role",
+      "actions": "Actions"
+    },
+    "roles": {
+      "farmer": "Farmer",
+      "admin": "Admin",
+      "buyer": "Buyer"
+    },
+    "tooltips": {
+      "change_role": "Change Role",
+      "delete_user": "Delete User"
+    },
+    "product": {
+      "farmer": "Farmer: {{name}}"
+    },
+    "infrastructure": {
+      "schedule_title": "Schedule Management",
+      "alerts_title": "Notification Management",
+      "alerts_note": "* Notification management module will be updated soon."
+    },
+    "confirm": {
+      "delete_user": "Do you want to delete this user?",
+      "delete_product": "Do you want to delete this product?"
+    }
+  },
+  "light_schedule": {
+    "title": "MSEDCL Power Schedule",
+    "subtitle": "Check power availability in your area",
+    "edit_button": "Change Schedule",
+    "state_label": "State",
+    "state_value": "Maharashtra",
+    "district_label": "District",
+    "district_placeholder": "Select District",
+    "taluka_label": "Taluka / Village",
+    "taluka_placeholder": "Select Taluka",
+    "status_label": "Current Status",
+    "power_on": "Power is ON",
+    "power_off": "Power is OFF",
+    "next_time_label": "Next Time",
+    "edit_title": "Edit Schedule",
+    "today_title": "Today's Schedule",
+    "session": "Session",
+    "save_button": "Save",
+    "saving": "Saving...",
+    "cancel_button": "Cancel",
+    "advisory_title": "Irrigation Advisory",
+    "advisory_on": "Power is ON! Great time to start irrigation. Please check voltage before starting motor.",
+    "advisory_off": "Next power will be at {{time}}. Keep irrigation ready.",
+    "select_prompt": "Please select District and Taluka to view information"
+  },
+  "market_ticker": {
+    "loading": "Loading latest market rates...",
+    "live_mandi": "Live Mandi"
+  },
+  "mandi_rates": {
+    "title": "बाजार भाव (APMC Rates)",
+    "subtitle": "Official Market Rates from Government Committees",
+    "search_placeholder": "Search for crop or market...",
+    "info_title": "Official Government Data",
+    "info_desc": "These rates are obtained from Agmarknet and MSAMB (Maharashtra State Agricultural Marketing Board).",
+    "last_updated": "Last Updated",
+    "avg_price": "Average Price",
+    "daily_change": "Change",
+    "no_results": "No results found",
+    "disclaimer": "These rates are for information only. Please contact your local APMC before any transaction."
+  },
+  "weather_widget": {
+    "title": "Weather Forecast",
+    "subtitle": "Real-time weather for your farm",
+    "current": "Current Weather",
+    "forecast": "3-Day Forecast",
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "feels_like": "Feels like",
+    "loading": "Fetching weather data...",
+    "error": "Failed to load weather data",
+    "invalid_key": "Invalid API Key. Please check your settings or wait for activation.",
+    "demo_mode": "Demo Mode (Mock Data)",
+    "demo_note": "Showing sample data because the API key is not configured or invalid.",
+    "select_region": "Select Region",
+    "pune": "Pune",
+    "mumbai": "Mumbai",
+    "nashik": "Nashik",
+    "nagpur": "Nagpur",
+    "aurangabad": "Chhatrapati Sambhajinagar",
+    "kolhapur": "Kolhapur",
+    "solapur": "Solapur",
+    "amravati": "Amravati",
+    "latur": "Latur",
+    "akola": "Akola"
+  },
+  "chat": {
+    "title": "Chat",
+    "search_placeholder": "Search conversations...",
+    "no_chats": "No conversations yet.",
+    "start_from_marketplace": "Start a chat from the marketplace.",
+    "empty_state_title": "Your Conversations",
+    "empty_state_desc": "Select a chat from the list to start communicating with other farmers and buyers.",
+    "type_message": "Type a message...",
+    "send": "Send",
+    "online": "Online",
+    "start_conversation": "Start a conversation"
+  }
+}

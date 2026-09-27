@@ -1,0 +1,392 @@
+{
+  "brand": "बलिराजा",
+  "tagline": "Premium Agri",
+  "nav": {
+    "home": "होम",
+    "buy": "बाजार",
+    "messages": "चर्चा",
+    "sell": "बिक्री",
+    "insights": "फसल सलाह",
+    "services": "सेवाएं",
+    "ai": "AI सहायता",
+    "admin": "एडमिन",
+    "mandi": "बाजार भाव"
+  },
+  "auth": {
+    "login": "लॉगिन",
+    "logout": "लॉगआउट",
+    "welcome": "राम राम,",
+    "please_login": "कृपया लॉगिन करें।",
+    "please_login_farmer": "कृपया किसान के रूप में लॉगिन करें।",
+    "admin_only": "केवल एडमिन के लिए प्रवेश।"
+  },
+  "common": {
+    "loading": "बलिराजा लोड हो रहा है...",
+    "go_home": "होम पर जाएं",
+    "all_rights_reserved": "सर्वाधिकार सुरक्षित।",
+    "footer_description": "हमारा लक्ष्य तकनीक और सीधे व्यापार के माध्यम से किसानों को सशक्त बनाना है।",
+    "footer_links": "लिंक",
+    "footer_info": "जानकारी",
+    "footer_info_desc": "महाराष्ट्र के किसानों के लिए बनाया गया एक समर्पित मंच।",
+    "view_all": "सभी देखें",
+    "buy_now": "अभी खरीदें",
+    "fill_sample": "नमूना भरें"
+  },
+  "hero": {
+    "motto": "किसान सुखी, जगत सुखी!",
+    "title_main": "बलिराजा",
+    "title_sub": "डिजिटल बाजार",
+    "description": "महाराष्ट्र के मेहनती किसानों के लिए आधुनिक तकनीक और सीधे व्यापार का एक समर्पित मंच।",
+    "quick_actions": {
+      "sell": "फसल बेचें",
+      "buy": "बाजार",
+      "ai": "AI सहायता"
+    },
+    "featured": {
+      "title": "ताजा माल",
+      "subtitle": "सीधे खेत से उपभोक्ताओं तक",
+      "per_quintal": "/क्विंटल"
+    },
+    "stats": {
+      "farmers": "किसान मित्र",
+      "live": "लाइव",
+      "market_rates": "बाजार भाव",
+      "ai_help": "AI सहायता"
+    }
+  },
+  "marketplace": {
+    "title": "बाजार",
+    "subtitle": "महाराष्ट्र के हर कोने से शुद्ध और ताजा कृषि उत्पाद",
+    "search_placeholder": "आप क्या ढूंढ रहे हैं? जैसे आम, गुड़...",
+    "filters": {
+      "title": "उन्नत फ़िल्टर",
+      "price_range": "मूल्य सीमा",
+      "location": "स्थान",
+      "location_placeholder": "जैसे नासिक, पुणे...",
+      "reset": "फ़िल्टर रीसेट करें"
+    },
+    "categories": {
+      "all": "सभी फसलें",
+      "vegetables": "सब्जियां",
+      "fruits": "फल",
+      "grains": "अनाज",
+      "spices": "मसाले"
+    },
+    "trends": {
+      "title": "आज के बाजार भाव",
+      "source": "* स्रोत: महाराष्ट्र की प्रमुख कृषि उपज मंडी समितियां (APMC)"
+    },
+    "product": {
+      "farmer": "किसान",
+      "add_to_cart": "कार्ट में जोड़ें",
+      "buy_now": "अभी खरीदें",
+      "per": "प्रति"
+    },
+    "no_products": "कोई उत्पाद नहीं मिला!",
+    "view_all_crops": "सभी फसलें देखें"
+  },
+  "bottom_nav": {
+    "home": "होम",
+    "market": "बाजार",
+    "messages": "चर्चा",
+    "sell": "बिक्री",
+    "advice": "सलाह",
+    "services": "सेवाएं",
+    "ai": "AI"
+  },
+  "login": {
+    "title": "पैठणी एग्री में आपका स्वागत है",
+    "subtitle": "किसानों के लिए डिजिटल सशक्तिकरण",
+    "i_am_farmer": "मैं किसान हूँ",
+    "i_am_buyer": "मैं खरीदार हूँ",
+    "phone_placeholder": "फोन नंबर दर्ज करें",
+    "send_otp": "OTP भेजें",
+    "enter_otp": "OTP दर्ज करें",
+    "complete_login": "लॉगिन पूरा करें",
+    "google_login": "Google के साथ लॉगिन करें",
+    "error_phone": "कृपया एक वैध फोन नंबर दर्ज करें",
+    "error_otp": "कृपया एक वैध OTP दर्ज करें",
+    "success_login": "लॉगिन सफल!"
+  },
+  "farmer": {
+    "greeting": "नमस्ते, {{name}}!",
+    "subtitle": "अपने कृषि उत्पादों और ऑर्डर का प्रबंधन करें",
+    "add_new_product": "नया उत्पाद जोड़ें",
+    "stats": {
+      "total_sales": "कुल बिक्री",
+      "active_listings": "सक्रिय लिस्टिंग",
+      "today_orders": "आज के ऑर्डर",
+      "rating": "किसान रेटिंग",
+      "stable": "स्थिर",
+      "excellent": "उत्कृष्ट"
+    },
+    "my_listings": "मेरी लिस्टिंग",
+    "orders": "ऑर्डर",
+    "sales_chart": "बिक्री प्रदर्शन",
+    "active": "सक्रिय",
+    "delete_confirm": "क्या आप वाकई इस उत्पाद को हटाना चाहते हैं?",
+    "no_listings": "आपने अभी तक कोई उत्पाद सूचीबद्ध नहीं किया है।",
+    "add_first_product": "अपना पहला उत्पाद अभी जोड़ें",
+    "orders_title": "आने वाले ऑर्डर",
+    "modal": {
+      "title": "नया उत्पाद पंजीकृत करें",
+      "subtitle": "अपनी फसल को सूचीबद्ध करने के लिए विवरण भरें",
+      "product_name": "उत्पाद का नाम",
+      "product_name_placeholder": "जैसे ताजे लाल प्याज",
+      "location": "स्थान",
+      "category": "श्रेणी",
+      "unit": "इकाई",
+      "description": "विवरण",
+      "description_placeholder": "अपने उत्पाद की गुणवत्ता, विविधता आदि का वर्णन करें।",
+      "product_image": "उत्पाद की छवि",
+      "uploading": "अपलोड हो रहा है...",
+      "change_photo": "फोटो बदलें",
+      "select_photo": "फोटो चुनें",
+      "photo_hint": "अधिकतम आकार 1MB। उच्च गुणवत्ता वाली छवियों का उपयोग करें।",
+      "submit": "उत्पाद सूचीबद्ध करें",
+      "price": "कीमत (₹)",
+      "success_add": "उत्पाद सफलतापूर्वक सूचीबद्ध किया गया!",
+      "success_delete": "उत्पाद सफलतापूर्वक हटा दिया गया!"
+    },
+    "default_name": "किसान मित्र"
+  },
+  "units": {
+    "kg": "किलो",
+    "dozen": "दर्जन",
+    "quintal": "क्विंटल",
+    "piece": "नग"
+  },
+  "categories": {
+    "all": "सभी फसलें",
+    "vegetables": "सब्जियां",
+    "fruits": "फल",
+    "grains": "अनाज",
+    "spices": "मसाले",
+    "others": "अन्य"
+  },
+  "ai_assistant": {
+    "title": "पैठणी AI सहायक",
+    "placeholder": "खेती के बारे में कुछ भी पूछें...",
+    "weather": "आज का मौसम",
+    "crop_advice": "फसल सलाह",
+    "market_rates": "बाजार भाव",
+    "missing_api_key": "क्षमा करें, API कुंजी गायब है!",
+    "tools": {
+      "chat": "चैट",
+      "market": "बाजार",
+      "health": "स्वास्थ्य"
+    }
+  },
+  "user_profile": {
+    "title": "मेरी प्रोफाइल",
+    "my_info": "मेरी जानकारी",
+    "history": "लेनदेन का इतिहास",
+    "my_farm": "मेरा खेत",
+    "settings": "सेटिंग्स",
+    "language": "भाषा",
+    "logout": "लॉगआउट"
+  },
+  "cart": {
+    "title": "आपका बैग ({{count}})",
+    "quantity": "मात्रा: {{quantity}} {{unit}}",
+    "book_order": "ऑर्डर बुक करें",
+    "empty": "आपका कार्ट खाली है"
+  },
+  "alerts": {
+    "title": "सूचना केंद्र (Alerts)",
+    "subtitle": "महत्वपूर्ण अपडेट और चेतावनियाँ",
+    "new_tag": "{{count}} नया",
+    "view_all": "सभी सूचनाएं देखें",
+    "severity": {
+      "high": "अत्यावश्यक",
+      "medium": "मध्यम",
+      "low": "सामान्य"
+    },
+    "admin": {
+      "add_alert": "नई सूचना जोड़ें (Add New Alert)",
+      "edit_alert": "सूचना संपादित करें (Edit Alert)",
+      "delete_alert": "सूचना हटाएँ (Delete Alert)",
+      "alert_type": "सूचना का प्रकार (Alert Type)",
+      "alert_title": "शीर्षक (Title)",
+      "alert_message": "संदेश (Message)",
+      "alert_severity": "तीव्रता (Severity)",
+      "alert_time": "समय (Display Time)",
+      "save_alert": "सूचना सहेजें (Save Alert)",
+      "confirm_delete_alert": "क्या आप वाकई इस सूचना को हटाना चाहते हैं? (Are you sure you want to delete this alert?)"
+    },
+    "mock": {
+      "power_title": "बिजली चालू (Power ON)",
+      "power_message": "आपके क्षेत्र में बिजली आपूर्ति शुरू हो गई है। सिंचाई शुरू करने का यह अच्छा समय है।",
+      "power_time": "अभी",
+      "weather_title": "बारिश का अलर्ट (Rain Alert)",
+      "weather_message": "अगले 2 घंटों में हल्की बारिश की संभावना है। फसलों का ध्यान रखें।",
+      "weather_time": "10 मिनट पहले",
+      "irrigation_title": "सिंचाई टिप (Irrigation Tip)",
+      "irrigation_message": "कल सुबह 6 से 10 बजे तक बिजली उपलब्ध रहेगी, सिंचाई की योजना बनाएं।",
+      "irrigation_time": "1 घंटा पहले"
+    }
+  },
+  "smart_insights": {
+    "title": "स्मार्ट फसल सलाहकार इंजन",
+    "subtitle": "बाजार में अधिक आपूर्ति के कारण होने वाले नुकसान से बचें। अपने क्षेत्र में फसल वितरण की जांच करें और विशेषज्ञ AI सलाह लें।",
+    "region_selector": {
+      "label": "क्षेत्र चुनें",
+      "maharashtra": "महाराष्ट्र",
+      "pune": "पुणे",
+      "nashik": "नाशिक",
+      "solapur": "सोलापुर"
+    },
+    "oversupply_alert": {
+      "title": "अत्यधिक आपूर्ति जोखिम अलर्ट",
+      "message": "आपके क्षेत्र में {{crops}} का उत्पादन बहुत अधिक है। इससे बाजार में कीमतों में गिरावट आ सकती है।",
+      "view_alternatives": "वैकल्पिक फसलें देखें"
+    },
+    "distribution": {
+      "title": "फसल वितरण"
+    },
+    "farmer_count": {
+      "title": "किसानों की संख्या"
+    },
+    "plan": {
+      "title": "AI को अपनी योजना बताएं",
+      "label": "आप कौन सी फसल उगाने की योजना बना रहे हैं?",
+      "placeholder": "जैसे प्याज, सोयाबीन, कपास",
+      "get_advisory": "AI सलाह लें",
+      "save_plan": "योजना सहेजें",
+      "thinking": "सोच रहा हूँ...",
+      "saving": "सहेज रहा हूँ...",
+      "success": "आपकी योजना सफलतापूर्वक सहेज ली गई है!"
+    },
+    "advisory": {
+      "title": "AI सलाहकार रिपोर्ट",
+      "risk_analysis": "जोखिम विश्लेषण",
+      "advice": "AI सलाह",
+      "alternative_crops": "वैकल्पिक फसलें",
+      "demand_gap": "मांग में अंतर"
+    }
+  },
+  "admin": {
+    "title": "प्रशासक पैनल (Admin Panel)",
+    "subtitle": "सिस्टम प्रबंधन और नियंत्रण",
+    "panels": {
+      "users": "उपयोगकर्ता प्रबंधन",
+      "products": "बाजार प्रबंधन",
+      "infrastructure": "सेवाएं और समय सारणी"
+    },
+    "stats": {
+      "farmers": "कुल किसान",
+      "crops": "कुल फसलें",
+      "revenue": "कुल राजस्व (₹)"
+    },
+    "charts": {
+      "crop_distribution": "फसल वितरण (Crop Distribution)"
+    },
+    "recent_activities": {
+      "title": "हाल की गतिविधियां (Recent Activities)",
+      "new_crop": "नई फसल जोड़ी गई: {{name}}",
+      "new_tag": "नया"
+    },
+    "search_placeholder": "खोजें...",
+    "table": {
+      "user": "उपयोगकर्ता",
+      "role": "भूमिका (Role)",
+      "actions": "कार्रवाई"
+    },
+    "roles": {
+      "farmer": "किसान",
+      "admin": "एडमिन",
+      "buyer": "खरीदार"
+    },
+    "tooltips": {
+      "change_role": "भूमिका बदलें",
+      "delete_user": "उपयोगकर्ता हटाएं"
+    },
+    "product": {
+      "farmer": "किसान: {{name}}"
+    },
+    "infrastructure": {
+      "schedule_title": "समय सारणी प्रबंधन",
+      "alerts_title": "सूचना प्रबंधन",
+      "alerts_note": "* सूचना प्रबंधन मॉड्यूल जल्द ही अपडेट किया जाएगा।"
+    },
+    "confirm": {
+      "delete_user": "क्या आप इस उपयोगकर्ता को हटाना चाहते हैं?",
+      "delete_product": "क्या आप इस उत्पाद को हटाना चाहते हैं?"
+    }
+  },
+  "light_schedule": {
+    "title": "महावितरण बिजली समय सारणी",
+    "subtitle": "अपने क्षेत्र में बिजली की उपलब्धता की जांच करें",
+    "edit_button": "समय सारणी बदलें",
+    "state_label": "राज्य",
+    "state_value": "महाराष्ट्र (Maharashtra)",
+    "district_label": "जिला",
+    "district_placeholder": "जिला चुनें",
+    "taluka_label": "तालुका / गाँव",
+    "taluka_placeholder": "तालुका चुनें",
+    "status_label": "वर्तमान स्थिति",
+    "power_on": "बिजली चालू है (ON)",
+    "power_off": "बिजली बंद है (OFF)",
+    "next_time_label": "अगला समय",
+    "edit_title": "समय सारणी संपादन",
+    "today_title": "आज की समय सारणी",
+    "session": "सत्र",
+    "save_button": "सहेजें",
+    "saving": "सहेजा जा रहा है...",
+    "cancel_button": "रद्द करें",
+    "advisory_title": "सिंचाई सलाह",
+    "advisory_on": "बिजली चालू है! सिंचाई शुरू करने का यह अच्छा समय है। कृपया मोटर शुरू करने से पहले वोल्टेज की जांच करें।",
+    "advisory_off": "अगली बिजली {{time}} बजे आएगी। सिंचाई की तैयारी रखें।",
+    "select_prompt": "जानकारी देखने के लिए कृपया जिला और तालुका चुनें"
+  },
+  "market_ticker": {
+    "loading": "ताजा बाजार भाव लोड हो रहे हैं...",
+    "live_mandi": "Live मंडी"
+  },
+  "mandi_rates": {
+    "title": "बाजार भाव (APMC Rates)",
+    "subtitle": "बाजार समितियों के आधिकारिक दर",
+    "search_placeholder": "फसल या बाजार खोजें...",
+    "info_title": "आधिकारिक सरकारी डेटा",
+    "info_desc": "ये दरें Agmarknet और MSAMB (महाराष्ट्र राज्य कृषि विपणन बोर्ड) से प्राप्त की गई हैं।",
+    "last_updated": "अंतिम अपडेट",
+    "avg_price": "औसत भाव",
+    "daily_change": "बदलाव",
+    "no_results": "कोई परिणाम नहीं मिला",
+    "disclaimer": "ये दरें केवल जानकारी के लिए हैं। किसी भी लेनदेन से पहले अपनी स्थानीय बाजार समिति से संपर्क करें।"
+  },
+  "weather_widget": {
+    "title": "मौसम का पूर्वानुमान",
+    "subtitle": "आपके खेत के लिए रीयल-टाइम मौसम",
+    "current": "वर्तमान मौसम",
+    "forecast": "3-दिवसीय पूर्वानुमान",
+    "humidity": "नमी",
+    "wind": "हवा",
+    "feels_like": "महसूस होने वाला तापमान",
+    "loading": "मौसम की जानकारी प्राप्त की जा रही है...",
+    "error": "मौसम की जानकारी लोड करने में विफल",
+    "select_region": "क्षेत्र चुनें",
+    "pune": "पुणे",
+    "mumbai": "मुंबई",
+    "nashik": "नासिक",
+    "nagpur": "नागपुर",
+    "aurangabad": "छत्रपति संभाजीनगर",
+    "kolhapur": "कोल्हापुर",
+    "solapur": "सोलापुर",
+    "amravati": "अमरावती",
+    "latur": "लातूर",
+    "akola": "अकोला"
+  },
+  "chat": {
+    "title": "चर्चा",
+    "search_placeholder": "बातचीत खोजें...",
+    "no_chats": "अभी तक कोई बातचीत नहीं हुई है।",
+    "start_from_marketplace": "बाजार से चैट शुरू करें।",
+    "empty_state_title": "आपकी बातचीत",
+    "empty_state_desc": "अन्य किसानों और खरीदारों के साथ संवाद शुरू करने के लिए सूची से एक चैट चुनें।",
+    "type_message": "संदेश टाइप करें...",
+    "send": "भेजें",
+    "online": "ऑनलाइन",
+    "start_conversation": "बातचीत शुरू करें"
+  }
+}

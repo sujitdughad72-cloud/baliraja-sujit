@@ -1,0 +1,8 @@
+{
+  "name": "बळीराजा (Baliraja)",
+  "description": "A premium agricultural platform with AI-powered crop advisory, real-time market insights, and a direct farmer-to-buyer marketplace.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}

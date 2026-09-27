@@ -1,0 +1,216 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string (required)
+    //   - name: string (required)
+    //   - role: string (required, 'farmer' | 'buyer')
+    //   - phone: string
+    //   - email: string
+    //   - secretKey: string
+    //
+    // Collection: products
+    // Document ID: {productId}
+    // Fields:
+    //   - name: string (required)
+    //   - category: string (required)
+    //   - price: number (required)
+    //   - unit: string (required)
+    //   - farmerName: string
+    //   - farmerUid: string (required)
+    //   - location: string
+    //   - image: string
+    //   - description: string
+    //   - createdAt: timestamp
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+          (request.auth.token.email == "sujitdughad72@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasOnly(['uid', 'name', 'role', 'phone', 'email', 'secretKey']) &&
+             data.keys().hasAll(['uid', 'name', 'role']) &&
+             data.uid is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.role in ['farmer', 'buyer', 'admin'] &&
+             (!('phone' in data) || data.phone is string) &&
+             (!('email' in data) || data.email is string) &&
+             (!('secretKey' in data) || data.secretKey is string || data.secretKey == null);
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['name', 'category', 'price', 'unit', 'farmerUid']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.price is number && data.price >= 0 &&
+             data.farmerUid is string &&
+             data.category is string;
+    }
+
+    function isValidPlan(data) {
+      return data.keys().hasAll(['farmerUid', 'plannedCrop', 'region', 'season']) &&
+             data.farmerUid is string &&
+             data.plannedCrop is string && data.plannedCrop.size() > 0 &&
+             data.region is string &&
+             data.season is string;
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasOnly(['enableOnlinePayment']) &&
+             data.enableOnlinePayment is bool;
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll(['buyerUid', 'items', 'total', 'status', 'paymentMethod', 'farmerUids']) &&
+             data.buyerUid is string &&
+             data.items is list &&
+             data.total is number &&
+             data.status in ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'] &&
+             data.paymentMethod in ['online', 'cod'] &&
+             data.farmerUids is list;
+    }
+
+    function isValidOfficialReport(data) {
+      return data.keys().hasAll(['reportDate', 'rabiDistribution', 'summerDistribution', 'regionalStatus']) &&
+             data.reportDate is string &&
+             data.rabiDistribution is list &&
+             data.summerDistribution is list &&
+             data.regionalStatus is map;
+    }
+
+    function isValidAlert(data) {
+      return data.keys().hasAll(['type', 'title', 'message', 'severity']) &&
+             data.type in ['power', 'weather', 'irrigation', 'market'] &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.message is string && data.message.size() > 0 && data.message.size() < 1000 &&
+             data.severity in ['low', 'medium', 'high'];
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function isValidChat(data) {
+      return data.keys().hasAll(['participants', 'lastMessageAt', 'participantNames', 'lastMessage', 'unreadCount']) &&
+             data.participants is list &&
+             data.participants.size() == 2 &&
+             isValidDateString(data.lastMessageAt) &&
+             data.participantNames is map &&
+             data.lastMessage is string && data.lastMessage.size() <= 5000 &&
+             data.unreadCount is map;
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['chatId', 'senderUid', 'text', 'createdAt', 'read']) &&
+             data.chatId is string &&
+             data.senderUid is string &&
+             data.text is string && data.text.size() > 0 && data.text.size() <= 5000 &&
+             isValidDateString(data.createdAt) &&
+             data.read is bool;
+    }
+
+    // Rules
+    match /users/{uid} {
+      allow read: if isAuthenticated(); // Allow users to find each other for chat
+      allow create: if isAuthenticated() && isOwner(uid) && isValidUser(request.resource.data) && (request.resource.data.role != 'admin' || isAdmin());
+      allow update: if isAuthenticated() && (isOwner(uid) || isAdmin()) && isValidUser(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && 
+                    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'farmer' || isAdmin()) &&
+                    (request.resource.data.farmerUid == request.auth.uid || isAdmin()) &&
+                    isValidProduct(request.resource.data);
+      allow update: if isAuthenticated() && 
+                    (resource.data.farmerUid == request.auth.uid || isAdmin()) &&
+                    isValidProduct(request.resource.data);
+      allow delete: if isAuthenticated() && (resource.data.farmerUid == request.auth.uid || isAdmin());
+    }
+
+    match /alerts/{alertId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidAlert(request.resource.data);
+    }
+
+    match /schedules/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /cropInsights/{insightId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /farmerPlans/{planId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && 
+                    request.resource.data.farmerUid == request.auth.uid &&
+                    isValidPlan(request.resource.data);
+      allow update: if isAuthenticated() && 
+                    resource.data.farmerUid == request.auth.uid &&
+                    isValidPlan(request.resource.data);
+      allow delete: if isAuthenticated() && (resource.data.farmerUid == request.auth.uid || isAdmin());
+    }
+
+    match /settings/{docId} {
+      allow read: if true; // Global settings are public
+      allow write: if isAdmin() && isValidSettings(request.resource.data);
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (resource.data.buyerUid == request.auth.uid || request.auth.uid in resource.data.farmerUids || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.buyerUid == request.auth.uid && isValidOrder(request.resource.data);
+      allow update: if isAuthenticated() && (resource.data.buyerUid == request.auth.uid || request.auth.uid in resource.data.farmerUids || isAdmin()) && isValidOrder(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /officialReports/{reportId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidOfficialReport(request.resource.data);
+    }
+
+    match /verified_mandi_prices/{docId} {
+      allow read: if true;
+      allow list: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /chats/{chatId} {
+      allow get: if isAuthenticated() && (resource == null || request.auth.uid in resource.data.participants);
+      allow list: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated() && request.auth.uid in request.resource.data.participants && isValidChat(request.resource.data);
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.participants && isValidChat(request.resource.data);
+      
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isAuthenticated() && 
+                      request.auth.uid == request.resource.data.senderUid && 
+                      request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+                      isValidMessage(request.resource.data);
+      }
+    }
+  }
+}
