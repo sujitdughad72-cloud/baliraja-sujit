@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, ShoppingBag, PlusCircle, MessageSquare, Bell, ShieldCheck, BarChart2, TrendingUp, ClipboardList, MessageCircle } from 'lucide-react';
+import { Home, ShoppingBag, PlusCircle, MessageSquare, Bell, ShieldCheck, BarChart2, TrendingUp, ClipboardList, MessageCircle, Radio } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface BottomNavProps {
@@ -16,10 +16,8 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, user }) =
     { id: 'home', label: t('bottom_nav.home', 'होम'), icon: Home },
     { id: 'mandi', label: t('bottom_nav.mandi', 'बाजार भाव'), icon: TrendingUp },
     { id: 'buy', label: t('bottom_nav.market', 'बाजार'), icon: ShoppingBag },
-    { id: 'chat', label: t('bottom_nav.messages'), icon: MessageCircle },
     { id: 'sell', label: t('bottom_nav.sell', 'विक्री'), icon: PlusCircle },
-    { id: 'insights', label: t('bottom_nav.advice', 'सल्ला'), icon: BarChart2 },
-    { id: 'services', label: t('bottom_nav.services', 'सेवा'), icon: Bell },
+    { id: 'sensors', label: t('bottom_nav.sensors', 'सेन्सर'), icon: Radio },
     { id: 'ai', label: t('bottom_nav.ai', 'AI'), icon: MessageSquare },
     ...(user?.role === 'admin' || user?.email === 'sujitdughad72@gmail.com' ? [{ id: 'admin', label: t('nav.admin', 'अ‍ॅडमिन'), icon: ShieldCheck }] : [])
   ];

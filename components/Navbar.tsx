@@ -41,6 +41,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, user, onLoginCl
               { id: 'chat', label: t('nav.messages') },
               { id: 'sell', label: t('nav.sell') },
               { id: 'insights', label: t('nav.insights') },
+              { id: 'sensors', label: t('nav.sensors', { defaultValue: 'माती सेन्सर (IoT)' }) },
               { id: 'services', label: t('nav.services') },
               { id: 'ai', label: t('nav.ai') },
               ...(user?.role === 'admin' || user?.email === 'sujitdughad72@gmail.com' ? [{ id: 'admin', label: t('nav.admin') }] : [])

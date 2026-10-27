@@ -1,22 +1,25 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ShoppingBag, PlusCircle, MessageSquare, ArrowRight, Star, MapPin, TrendingUp } from 'lucide-react';
+import { ShoppingBag, PlusCircle, MessageSquare, ArrowRight, Star, MapPin, TrendingUp, Radio } from 'lucide-react';
 
 interface HeroProps {
   onExplore: () => void;
   onSell: () => void;
   onAdmin?: () => void;
+  onSensors?: () => void;
+  onAi?: () => void;
   user?: any;
 }
 
-const Hero: React.FC<HeroProps> = ({ onExplore, onSell, onAdmin, user }) => {
+const Hero: React.FC<HeroProps> = ({ onExplore, onSell, onAdmin, onSensors, onAi, user }) => {
   const { t } = useTranslation();
 
   const quickActions = [
-    { id: 'sell', label: t('hero.quick_actions.sell'), sub: 'Sell Crop', icon: PlusCircle, color: 'bg-paithani-saffron', onClick: onSell },
-    { id: 'buy', label: t('hero.quick_actions.buy'), sub: 'View Market', icon: ShoppingBag, color: 'bg-paithani-emerald', onClick: onExplore },
-    { id: 'ai', label: t('hero.quick_actions.ai'), sub: 'AI Advisor', icon: MessageSquare, color: 'bg-paithani-maroon', onClick: () => {} },
+    { id: 'sell', label: t('hero.quick_actions.sell'), sub: 'माल विक्री', icon: PlusCircle, color: 'bg-paithani-saffron', onClick: onSell },
+    { id: 'buy', label: t('hero.quick_actions.buy'), sub: 'बाजारपेठ', icon: ShoppingBag, color: 'bg-paithani-emerald', onClick: onExplore },
+    { id: 'sensors', label: 'माती सेन्सर', sub: 'NPK व ओलावा IoT', icon: Radio, color: 'bg-teal-700', onClick: onSensors || (() => {}) },
+    { id: 'ai', label: t('hero.quick_actions.ai'), sub: 'AI सल्लागार', icon: MessageSquare, color: 'bg-paithani-maroon', onClick: onAi || (() => {}) },
   ];
 
   return (
@@ -58,7 +61,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore, onSell, onAdmin, user }) => {
 
       {/* Quick Actions */}
       <div className="max-w-7xl mx-auto px-4 -mt-16 relative z-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {quickActions.map((action) => (
             <button 
               key={action.id}

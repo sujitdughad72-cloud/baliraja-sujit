@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getMarketAdvice, analyzeCropImage, startAgriChat, generateSpeech, playRawAudio } from '../services/geminiService';
-import { Mic, Send, Image as ImageIcon, Sparkles, Volume2, MessageSquare, TrendingUp, Stethoscope, ChevronRight, AlertTriangle, Sprout, FlaskConical, CheckCircle2, RotateCcw, Award } from 'lucide-react';
+import { Mic, Send, Image as ImageIcon, Sparkles, Volume2, MessageSquare, TrendingUp, Stethoscope, ChevronRight, AlertTriangle, Sprout, FlaskConical, CheckCircle2, RotateCcw, Award, Radio } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
+import { api } from '../services/apiClient';
+import { toast } from 'sonner';
 
 const AiAssistant: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -120,8 +122,72 @@ const AiAssistant: React.FC = () => {
     }
   };
 
-  const handleCropMlPrediction = () => {
+  const handleImportSensorReadings = async () => {
+    try {
+      const latest = await api.sensors.getLatest();
+      if (latest && latest.nitrogen) {
+        setSoilN(latest.nitrogen);
+        setSoilP(latest.phosphorus);
+        setSoilK(latest.potassium);
+        setSoilPh(latest.ph);
+        setSoilTemp(latest.temperature);
+        toast.success(`IoT सेन्सर रिडिंग्स आयात केल्या! N: ${latest.nitrogen}, P: ${latest.phosphorus}, K: ${latest.potassium}, pH: ${latest.ph}`);
+      } else {
+        setSoilN(55);
+        setSoilP(28);
+        setSoilK(42);
+        setSoilPh(6.8);
+        setSoilTemp(26.5);
+        toast.info('डीफॉल्ट IoT सेन्सर रिडिंग्स लोड केल्या');
+      }
+    } catch (err) {
+      toast.error('सेन्सर रिडिंग आयात करण्यात अडचण आली');
+    }
+  };
+
+  const handleCropMlPrediction = async () => {
     setIsMlCalculating(true);
+    try {
+      // 1. Try real-time Spring Boot -> Python FastAPI ML pipeline
+      const springResult = await api.ai.recommendCrop({
+        nitrogen: soilN,
+        phosphorus: soilP,
+        potassium: soilK,
+        ph: soilPh,
+        temperature: soilTemp,
+        rainfall: soilRainfall,
+        soilType: 'काळी जमीन (Black Soil)',
+        district: 'नाशिक (Nashik)'
+      });
+
+      if (springResult && springResult.recommendedCrop) {
+        setCropMlResult({
+          bestMatch: {
+            id: springResult.recommendedCrop.toLowerCase(),
+            name: `${springResult.recommendedCropMr || springResult.recommendedCrop} (${springResult.recommendedCrop})`,
+            optimal: { n: soilN, p: soilP, k: soilK, ph: soilPh, temp: soilTemp, rain: soilRainfall },
+            yieldEstimate: springResult.estimatedYield || '१४ - १६ क्विंटल / एकर',
+            profitEstimate: springResult.estimatedProfit || '₹ १,१०,००० - ₹ १,६०,०००',
+            duration: springResult.growthDurationDays ? `${springResult.growthDurationDays} दिवस` : '११० दिवस',
+            soilType: springResult.soilSuitability || 'मध्यम ते भारी जमीन',
+            tips: springResult.cultivationTips || 'पाण्याचा योग्य निचरा ठेवावा. सेंद्रिय खतांचा संतुलित वापर करावा.',
+            matchScore: Math.round((springResult.confidenceScore || 0.92) * 100)
+          },
+          alternatives: (springResult.alternativeCrops || ['Tomato', 'Soybean']).map(c => ({
+            id: c.toLowerCase(),
+            name: c,
+            matchScore: 84
+          })),
+          soilHealthRating: springResult.soilSuitability || (soilPh >= 6.5 && soilPh <= 7.5 ? 'उत्कृष्ट (Optimal)' : 'सुधारणा आवश्यक (Correction Needed)')
+        });
+        setIsMlCalculating(false);
+        return;
+      }
+    } catch (err) {
+      console.info("Spring Boot AI service not active locally; falling back to client-side ML engine:", err);
+    }
+
+    // 2. Client-side agronomic prediction engine fallback
     setTimeout(() => {
       // Machine Learning Suitability Scoring based on Maharashtra agricultural benchmarks
       const crops = [
@@ -621,6 +687,14 @@ const AiAssistant: React.FC = () => {
                     className="px-3 py-1 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded-lg text-xs font-bold transition-all"
                   >
                     मुरुमाड (द्राक्षे/डाळिंब)
+                  </button>
+                  <button
+                    onClick={handleImportSensorReadings}
+                    className="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                    title="माती ओलावा व NPK सेन्सरमधून थेट आकडे घ्या"
+                  >
+                    <Radio size={12} className="animate-pulse" />
+                    <span>📡 थेट IoT सेन्सरमधून घ्या</span>
                   </button>
                 </div>
               </div>

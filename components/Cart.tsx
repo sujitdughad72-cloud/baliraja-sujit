@@ -6,6 +6,7 @@ import { CheckCircle, ShoppingBag, X, Trash2, ArrowRight, Loader2, CreditCard, S
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../services/firestoreUtils';
+import { api } from '../services/apiClient';
 
 interface CartProps {
   isOpen: boolean;
@@ -74,6 +75,23 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove, onClear, 
       };
 
       await addDoc(collection(db, 'orders'), orderData);
+      
+      // Synchronize with Spring Boot Backend (Order & Inventory)
+      try {
+        const buyerId = Number(user.uid) || 1;
+        await api.orders.create(buyerId, {
+          buyerId,
+          paymentMode: method === 'online' ? 'UPI' : 'CASH_ON_DELIVERY',
+          deliveryAddress: 'Customer Delivery Location, Maharashtra',
+          items: items.map(item => ({
+            productId: Number(item.product.id) || 1,
+            quantity: item.quantity,
+            unitPrice: item.product.price
+          }))
+        });
+      } catch (springErr) {
+        console.info("Spring Boot order API sync skipped or server offline:", springErr);
+      }
       
       setIsSuccess(true);
       setShowPaymentConfirm(false);

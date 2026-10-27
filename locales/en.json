@@ -10,7 +10,8 @@
     "services": "Services",
     "ai": "AI Help",
     "admin": "Admin",
-    "mandi": "Mandi Rates"
+    "mandi": "Mandi Rates",
+    "sensors": "Soil Sensors (IoT)"
   },
   "auth": {
     "login": "Login",

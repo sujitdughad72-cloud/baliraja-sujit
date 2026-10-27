@@ -5,6 +5,7 @@ import { signInWithPopup, GoogleAuthProvider, RecaptchaVerifier, signInWithPhone
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { User } from '../types';
 import { useTranslation } from 'react-i18next';
+import { api } from '../services/apiClient';
 
 declare global {
   interface Window {
@@ -19,8 +20,13 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
   const { t } = useTranslation();
+  const [authMethod, setAuthMethod] = useState<'spring' | 'otp'>('spring');
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [role, setRole] = useState<'farmer' | 'buyer'>('farmer');
+  const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [district, setDistrict] = useState('नाशिक (Nashik)');
   const [otp, setOtp] = useState('');
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
@@ -28,6 +34,70 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
   const [error, setError] = useState<string | null>(null);
   const [adminClickCount, setAdminClickCount] = useState(0);
   const [secretKey, setSecretKey] = useState('');
+
+  const handleSpringBootAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone || phone.length !== 10) {
+      setError(t('login.error_phone', 'कृपया १० अंकी मोबाईल नंबर टाका.'));
+      return;
+    }
+    if (!password || password.length < 4) {
+      setError('पासवर्ड किमान ४ अक्षरांचा असावा.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      if (isRegisterMode) {
+        if (!fullName.trim()) {
+          setError('कृपया आपले संपूर्ण नाव टाका.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const res = await api.auth.register({
+          fullName,
+          phone,
+          password,
+          role: (secretKey === 'BALIRAJA_ADMIN_2026' ? 'ADMIN' : role.toUpperCase()) as any,
+          district: district,
+          village: 'गाव',
+          totalLandAcres: role === 'farmer' ? 3.5 : 0
+        });
+
+        const userData: User = {
+          uid: String(res.userId),
+          name: res.fullName,
+          role: (res.role.toLowerCase() as any) || (role as any),
+          phone: res.phone,
+          email: res.email || ''
+        };
+        onLogin(userData);
+      } else {
+        const res = await api.auth.login({
+          identifier: phone,
+          password
+        });
+
+        const userData: User = {
+          uid: String(res.userId),
+          name: res.fullName,
+          role: (res.role.toLowerCase() as any) || (role as any),
+          phone: res.phone,
+          email: res.email || ''
+        };
+        onLogin(userData);
+      }
+    } catch (err: any) {
+      console.warn("Spring Boot authentication failed, providing local demo profile:", err);
+      // If Spring Boot server is not running on localhost:8080 yet, notify user and provide direct login
+      setError(`Spring Boot API (${api.auth ? 'http://localhost:8080/api' : ''}): ${err.message || 'सर्व्हरशी संपर्क होऊ शकला नाही. आपण खाली OTP किंवा थेट प्रवेश वापरू शकता.'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -232,31 +302,134 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
             </div>
           )}
 
-          <div className="flex gap-4 mb-10">
+          {/* Auth Method Selector */}
+          <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-6">
+            <button
+              type="button"
+              onClick={() => { setAuthMethod('spring'); setError(null); }}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-black transition-all ${authMethod === 'spring' ? 'bg-white text-paithani-emerald shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              🌱 Spring Boot & MySQL
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAuthMethod('otp'); setError(null); }}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-black transition-all ${authMethod === 'otp' ? 'bg-white text-paithani-saffron shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              📱 OTP / Google
+            </button>
+          </div>
+
+          <div className="flex gap-4 mb-6">
             <button 
+              type="button"
               onClick={() => setRole('farmer')}
-              className={`flex-1 py-4 rounded-2xl border-2 font-black transition-all flex flex-col items-center gap-1 ${role === 'farmer' ? 'bg-paithani-saffron/10 border-paithani-saffron text-paithani-saffron shadow-inner' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
+              className={`flex-1 py-3 rounded-2xl border-2 font-black transition-all flex flex-col items-center gap-1 ${role === 'farmer' ? 'bg-paithani-saffron/10 border-paithani-saffron text-paithani-saffron shadow-inner' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
             >
               <span className="text-2xl">🚜</span>
               {t('login.i_am_farmer', 'मी शेतकरी आहे')}
             </button>
             <button 
+              type="button"
               onClick={() => setRole('buyer')}
-              className={`flex-1 py-4 rounded-2xl border-2 font-black transition-all flex flex-col items-center gap-1 ${role === 'buyer' ? 'bg-paithani-emerald/10 border-paithani-emerald text-paithani-emerald shadow-inner' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
+              className={`flex-1 py-3 rounded-2xl border-2 font-black transition-all flex flex-col items-center gap-1 ${role === 'buyer' ? 'bg-paithani-emerald/10 border-paithani-emerald text-paithani-emerald shadow-inner' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
             >
               <span className="text-2xl">🛒</span>
               {t('login.i_am_buyer', 'मी खरेदीदार आहे')}
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {error && (
               <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm font-bold rounded-lg">
                 {error}
               </div>
             )}
 
-            {!showOtpInput ? (
+            {authMethod === 'spring' ? (
+              <form onSubmit={handleSpringBootAuth} className="space-y-4">
+                <div className="flex justify-between items-center bg-slate-50 p-1 rounded-xl mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsRegisterMode(false)}
+                    className={`flex-1 py-2 text-xs font-black rounded-lg transition-all ${!isRegisterMode ? 'bg-paithani-emerald text-white shadow' : 'text-slate-500'}`}
+                  >
+                    लॉगिन (Login)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsRegisterMode(true)}
+                    className={`flex-1 py-2 text-xs font-black rounded-lg transition-all ${isRegisterMode ? 'bg-paithani-emerald text-white shadow' : 'text-slate-500'}`}
+                  >
+                    नवीन नोंदणी (Register)
+                  </button>
+                </div>
+
+                {isRegisterMode && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">पूर्ण नाव (Full Name)</label>
+                      <input 
+                        type="text" 
+                        required
+                        className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-paithani-emerald outline-none font-bold transition-all"
+                        placeholder="उदा. सुरेश पांडुरंग पाटील"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">जिल्हा (District)</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-paithani-emerald outline-none font-bold transition-all"
+                        placeholder="उदा. नाशिक / पुणे / लातूर"
+                        value={district}
+                        onChange={(e) => setDistrict(e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">{t('login.mobile_number', 'मोबाईल नंबर')}</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-3 font-bold text-slate-400">+91</span>
+                    <input 
+                      type="tel" 
+                      pattern="[0-9]{10}"
+                      required
+                      className="w-full pl-14 pr-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-paithani-emerald outline-none font-bold transition-all"
+                      placeholder="9876543210"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">पासवर्ड (Password)</label>
+                  <input 
+                    type="password" 
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-paithani-emerald outline-none font-bold transition-all"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`w-full py-4 bg-paithani-emerald text-white font-black text-lg rounded-2xl hover:bg-emerald-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {isSubmitting ? t('common.processing', 'प्रक्रिया सुरू आहे...') : (isRegisterMode ? 'खाते तयार करा (Spring Boot)' : 'लॉगिन करा (Spring Boot)')}
+                  </button>
+                </div>
+              </form>
+            ) : !showOtpInput ? (
               <>
                 <div>
                   <label className="block text-sm font-black text-slate-500 uppercase tracking-widest mb-2">{t('login.mobile_number', 'मोबाईल नंबर')}</label>

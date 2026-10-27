@@ -19,6 +19,7 @@ import MandiRates from './components/MandiRates';
 import Chat from './components/Chat';
 import { WeatherWidget } from './components/WeatherWidget';
 import UserProfile from './components/UserProfile';
+import SoilSensorDashboard from './components/SoilSensorDashboard';
 import { Product, User } from './types';
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -27,10 +28,11 @@ import { toast } from 'sonner';
 
 import { handleFirestoreError, OperationType } from './services/firestoreUtils';
 import { getOrCreateChat } from './src/services/chatService';
+import { api } from './services/apiClient';
 
 const App: React.FC = () => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<'home' | 'buy' | 'sell' | 'ai' | 'services' | 'admin' | 'insights' | 'profile' | 'mandi' | 'chat'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'buy' | 'sell' | 'ai' | 'services' | 'admin' | 'insights' | 'profile' | 'mandi' | 'chat' | 'sensors'>('home');
   const [user, setUser] = useState<User | null>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -265,6 +267,23 @@ const App: React.FC = () => {
     };
     try {
       await setDoc(productRef, productData);
+      // Synchronize with Spring Boot backend API
+      try {
+        const farmerId = Number(user.uid) || 1;
+        await api.products.create(farmerId, {
+          name: newProduct.name,
+          nameMr: newProduct.name,
+          categoryId: 1,
+          description: newProduct.description,
+          pricePerUnit: newProduct.price,
+          unit: newProduct.unit,
+          stockQuantity: 100,
+          location: newProduct.location,
+          imageUrl: productData.image
+        });
+      } catch (springErr) {
+        console.info("Spring Boot backend offline; product stored in Firestore/local state:", springErr);
+      }
       toast.success(t('farmer.modal.success_add'));
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'products');
@@ -276,6 +295,14 @@ const App: React.FC = () => {
     if (!user) return;
     try {
       await deleteDoc(doc(db, 'products', productId));
+      try {
+        const numericId = Number(productId);
+        if (!isNaN(numericId)) {
+          await api.products.delete(numericId);
+        }
+      } catch (springErr) {
+        console.info("Spring Boot delete skipped or backend offline:", springErr);
+      }
       toast.success(t('farmer.modal.success_delete'));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `products/${productId}`);
@@ -325,7 +352,16 @@ const App: React.FC = () => {
 
     switch (activeTab) {
       case 'home':
-        return <Hero onExplore={() => setActiveTab('buy')} onSell={() => setActiveTab('sell')} onAdmin={() => setActiveTab('admin')} user={user} />;
+        return (
+          <Hero 
+            onExplore={() => setActiveTab('buy')} 
+            onSell={() => setActiveTab('sell')} 
+            onAdmin={() => setActiveTab('admin')} 
+            onSensors={() => setActiveTab('sensors')}
+            onAi={() => setActiveTab('ai')}
+            user={user} 
+          />
+        );
       case 'buy':
         return <Marketplace products={products} onAddToCart={addToCart} onMessageFarmer={handleMessageFarmer} />;
       case 'mandi':
@@ -358,6 +394,8 @@ const App: React.FC = () => {
         return <AiAssistant />;
       case 'insights':
         return <SmartCropInsights user={user} />;
+      case 'sensors':
+        return <SoilSensorDashboard onNavigateToCropPlan={(crop) => setActiveTab('ai')} />;
       case 'profile':
         return user ? (
           <UserProfile user={user} onLogout={handleLogout} products={products} />

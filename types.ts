@@ -74,3 +74,58 @@ export interface Alert {
   severity: 'low' | 'medium' | 'high';
   createdAt?: any;
 }
+
+export interface SensorReading {
+  id?: string;
+  deviceId: string;
+  deviceName?: string;
+  nitrogen: number;       // mg/kg
+  phosphorus: number;     // mg/kg
+  potassium: number;      // mg/kg
+  moisture: number;       // % volumetric soil moisture
+  ph: number;             // pH value (3.5 - 9.5)
+  temperature: number;    // °C
+  ec?: number;            // Electrical Conductivity µS/cm
+  battery?: number;       // %
+  timestamp: string;
+  connectionType?: 'serial' | 'ble' | 'wifi' | 'simulated';
+}
+
+export interface SensorPredictionResult {
+  soilHealthIndex: number;
+  soilHealthCategory: string;
+  moistureAnalysis: {
+    level: number;
+    status: string;
+    badgeColor: string;
+    actionRequired: string;
+    irrigationSchedule: string;
+    waterRequirementLitersPerAcre: number;
+  };
+  npkAnalysis: {
+    nitrogen: { value: number; status: string; deficit: number; target: number };
+    phosphorus: { value: number; status: string; deficit: number; target: number };
+    potassium: { value: number; status: string; deficit: number; target: number };
+  };
+  fertilizerPrescription: {
+    ureaBags: number;
+    dapBags: number;
+    mopBags: number;
+    organicManureTons: number;
+    schedule: { stage: string; instruction: string }[];
+  };
+  topCrops: {
+    id: string;
+    cropName: string;
+    cropNameMr: string;
+    cropNameHi: string;
+    matchScore: number;
+    expectedYield: string;
+    estimatedIncomePerAcre: string;
+    durationDays: number;
+    tips: string;
+  }[];
+  criticalAlerts: string[];
+  summaryMr: string;
+  summaryEn: string;
+}
