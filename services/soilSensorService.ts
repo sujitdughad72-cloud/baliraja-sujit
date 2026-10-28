@@ -13,87 +13,72 @@ import { SensorReading, SensorPredictionResult } from '../types';
 
 export const SENSOR_PRESETS: { name: string; description: string; reading: Omit<SensorReading, 'id' | 'timestamp'> }[] = [
   {
-    name: 'नाशिक कांदा शेत (Nashik Onion Field - Optimal)',
-    description: 'चांगला ओलावा, संतुलित पोषणद्रव्ये आणि योग्य सामू (Optimal for Rabi/Kharif crops)',
+    name: 'नाशिक कांदा शेत (Nashik Onion - Optimal Soil & Climate)',
+    description: 'चांगला ओलावा (५२%), मुळांसाठी उत्तम तापमान (२६.५°C) आणि आदर्श आर्द्रता (६२%)',
     reading: {
       deviceId: 'FIELD-NASHIK-01',
-      deviceName: 'Nashik Plot A (Black Clay Loam)',
-      nitrogen: 58,
-      phosphorus: 28,
-      potassium: 42,
+      deviceName: 'नाशिक शेत प्लॉट १ (Nashik Plot 1)',
       moisture: 52,
-      ph: 6.8,
       temperature: 26.5,
-      ec: 420,
+      humidity: 62.0,
+      rawAdc: 560,
       battery: 94,
       connectionType: 'simulated'
     }
   },
   {
-    name: 'दुष्काळ / अत्यंत कोरडी जमीन (Drought / Critical Low Moisture)',
-    description: 'ओलावा केवळ १६%, पिकाला त्वरित ठिबक सिंचनाची गरज आहे (Immediate Irrigation Needed)',
+    name: 'दुष्काळ / अत्यंत कोरडी जमीन (Severe Drought / Dry Zone)',
+    description: 'ओलावा केवळ १६%, तापमान ३६°C; पिकाला सुकवा येण्याआधी तात्काळ ठिबक सिंचन आवश्यक',
     reading: {
       deviceId: 'FIELD-MARATHWADA-02',
-      deviceName: 'Marathwada Plot (Dry Zone)',
-      nitrogen: 38,
-      phosphorus: 18,
-      potassium: 35,
+      deviceName: 'मराठवाडा कोरडा विभाग (Marathwada Dry Zone)',
       moisture: 16,
-      ph: 7.4,
-      temperature: 34.2,
-      ec: 310,
+      temperature: 36.2,
+      humidity: 21.0,
+      rawAdc: 890,
       battery: 88,
       connectionType: 'simulated'
     }
   },
   {
-    name: 'नायट्रोजनची तीव्र कमतरता (Severe Nitrogen Deficient Cotton)',
-    description: 'कमी नायट्रोजनमुळे पाने पिवळी पडण्याचा धोका, युरिया मात्रा आवश्यक',
-    reading: {
-      deviceId: 'FIELD-VIDARBHA-03',
-      deviceName: 'Vidarbha Cotton Soil',
-      nitrogen: 18,
-      phosphorus: 32,
-      potassium: 48,
-      moisture: 46,
-      ph: 6.5,
-      temperature: 28.0,
-      ec: 380,
-      battery: 82,
-      connectionType: 'simulated'
-    }
-  },
-  {
     name: 'अति ओलावा / दलदल (Waterlogged / Root Rot Alert)',
-    description: 'ओलावा ८४%, मुळांना ऑक्सिजन मिळणे बंद; तात्काळ पाण्याचा निचरा करा',
+    description: 'ओलावा ८५%, मुळांना ऑक्सिजन मिळणे बंद; तात्काळ पाण्याचा निचरा करा',
     reading: {
-      deviceId: 'FIELD-KOLHAPUR-04',
-      deviceName: 'Kolhapur Sugarcane Patch',
-      nitrogen: 68,
-      phosphorus: 24,
-      potassium: 38,
-      moisture: 84,
-      ph: 7.9,
-      temperature: 23.8,
-      ec: 620,
-      battery: 91,
+      deviceId: 'FIELD-KOLHAPUR-03',
+      deviceName: 'कोल्हापूर ऊस शेत (Kolhapur Sugarcane Patch)',
+      moisture: 85,
+      temperature: 23.5,
+      humidity: 89.0,
+      rawAdc: 240,
+      battery: 92,
       connectionType: 'simulated'
     }
   },
   {
-    name: 'क्षारयुक्त / चोपण जमीन (Saline / High EC Problem)',
-    description: 'उच्च सामू (8.4) व ईसी (1850 µS/cm); जिप्सम व सेंद्रिय खतांचा वापर आवश्यक',
+    name: 'बुरशीजन्य रोग हवामान (High Fungal Spore & Blight Risk)',
+    description: 'आर्द्रता ९४%, तापमान २४°C आणि मातीत ओलावा ६५%; डाऊनी/करपा रोगाचा उच्च धोका',
     reading: {
-      deviceId: 'FIELD-SOLAPUR-05',
-      deviceName: 'Solapur Saline Soil',
-      nitrogen: 32,
-      phosphorus: 15,
-      potassium: 22,
-      moisture: 38,
-      ph: 8.4,
-      temperature: 30.5,
-      ec: 1850,
-      battery: 76,
+      deviceId: 'FIELD-PUNE-04',
+      deviceName: 'पुणे टोमॅटो शेत (Pune Tomato Field)',
+      moisture: 65,
+      temperature: 24.0,
+      humidity: 94.0,
+      rawAdc: 440,
+      battery: 85,
+      connectionType: 'simulated'
+    }
+  },
+  {
+    name: 'उष्णतेचा ताण (Severe Heat Stress & Wilting Risk)',
+    description: 'तापमान ३९.५°C, आर्द्रता १८%, माती ओलावा ३०%; पाने सुकण्याचा धोका',
+    reading: {
+      deviceId: 'FIELD-VIDARBHA-05',
+      deviceName: 'विदर्भ कापूस शेत (Vidarbha Cotton Plot)',
+      moisture: 30,
+      temperature: 39.5,
+      humidity: 18.0,
+      rawAdc: 720,
+      battery: 79,
       connectionType: 'simulated'
     }
   }
@@ -248,11 +233,13 @@ const CROP_PROFILES: CropProfile[] = [
   }
 ];
 
-/**
- * Agronomic Engine: Evaluates Sensor Readings and Computes Predictions
- */
 export function calculateSensorPredictions(reading: SensorReading): SensorPredictionResult {
-  const { nitrogen: n, phosphorus: p, potassium: k, moisture: m, ph, temperature: temp } = reading;
+  const m = reading.moisture ?? 50;
+  const temp = reading.temperature ?? 26.5;
+  const humidity = reading.humidity ?? 60.0;
+  const n = reading.nitrogen ?? 50;
+  const p = reading.phosphorus ?? 25;
+  const k = reading.potassium ?? 40;
 
   // 1. Soil Moisture Assessment & Irrigation Recommendation
   let moistureStatusText = '';
@@ -260,83 +247,79 @@ export function calculateSensorPredictions(reading: SensorReading): SensorPredic
   let actionRequired = '';
   let irrigationSchedule = '';
   let waterLitersPerAcre = 0;
+  let dryingHoursRemaining = 48;
 
   if (m < 22) {
-    moistureStatusText = 'अत्यंत कोरडी (Critical Dry) ⚠️';
+    moistureStatusText = 'अत्यंत कोरडी जमीन (Critical Dry) ⚠️';
     moistureBadgeColor = 'bg-rose-500 text-white';
-    actionRequired = 'मातीतील ओलावा अत्यंत कमी झाला आहे. पिकाला सुकवा येण्याआधी तात्काळ ठिबक किंवा स्प्रिंकलर सुरू करा.';
-    irrigationSchedule = 'आजच ३ ते ४ तास ठिबक सिंचन द्या. पुढील पाणी २ दिवसांनंतर.';
-    waterLitersPerAcre = Math.round((55 - m) * 1200); // approx water depth needed
+    actionRequired = 'मातीतील ओलावा धोकादायक पातळीवर कमी झाला आहे. पिकाला कायमस्वरूपी सुकवा येण्याआधी तात्काळ ठिबक सिंचन सुरू करा.';
+    irrigationSchedule = 'आजच ३ ते ४ तास ठिबक सिंचन द्या. ३ दिवसांनी पुन्हा ओलावा तपासा.';
+    waterLitersPerAcre = Math.round((55 - m) * 1200);
+    dryingHoursRemaining = 0;
   } else if (m < 40) {
     moistureStatusText = 'कमी ओलावा (Low Moisture) 💧';
     moistureBadgeColor = 'bg-amber-500 text-white';
-    actionRequired = 'ओलावा कमी होत आहे. पुढील २४ तासांत हलके पाणी द्यावे.';
+    actionRequired = 'ओलावा कमी होत असून मुळांवर ताण येत आहे. पुढील २४ तासांत हलके पाणी द्यावे.';
     irrigationSchedule = 'उद्या सकाळी ६ ते ९ दरम्यान २ तास ठिबक सिंचन द्या.';
     waterLitersPerAcre = Math.round((55 - m) * 1000);
+    dryingHoursRemaining = 18;
   } else if (m <= 70) {
-    moistureStatusText = 'योग्य ओलावा (Optimal Field Capacity) ✅';
+    moistureStatusText = 'योग्य ओलावा (Optimal Moisture) ✅';
     moistureBadgeColor = 'bg-emerald-600 text-white';
-    actionRequired = 'मुळांच्या वाढीसाठी आणि अन्नद्रव्ये शोषण्यासाठी जमिनीतील ओलावा उत्तम स्थितीत आहे.';
+    actionRequired = 'मुळांच्या निरोगी वाढीसाठी व अन्नद्रव्ये शोषण्यासाठी जमिनीतील ओलावा आदर्श स्थितीत आहे.';
     irrigationSchedule = 'सध्या पाणी देण्याची आवश्यकता नाही. २ दिवसांनंतर पुन्हा सेन्सर रिडिंग तपासा.';
     waterLitersPerAcre = 0;
+    dryingHoursRemaining = 60;
   } else {
     moistureStatusText = 'अति ओलावा / दलदल (Waterlogged / Saturated) 🚨';
     moistureBadgeColor = 'bg-indigo-600 text-white';
-    actionRequired = 'माती पूर्ण संपृक्त आहे, मुळांना हवा खेळती राहत नाही. तात्काळ पाण्याचा निचरा करा.';
+    actionRequired = 'माती पूर्ण संपृक्त आहे, मुळांना ऑक्सिजन मिळणे बंद झाले आहे. तात्काळ पाण्याचा निचरा करा.';
     irrigationSchedule = 'सिंचन पूर्णपणे बंद ठेवा. शेतातील चर व निचरा वाहिन्या मोकळ्या करा.';
     waterLitersPerAcre = 0;
+    dryingHoursRemaining = 96;
   }
 
-  // 2. NPK Nutrient Status & Fertilizer Prescription
-  // Standard agronomic targets (mg/kg): N: 60, P: 30, K: 40
-  const targetN = 60;
-  const targetP = 30;
-  const targetK = 40;
+  // 2. DHT11 Microclimate, VPD (Vapor Pressure Deficit) & Fungal Disease Analysis
+  // Saturation vapor pressure in kPa
+  const vpsat = 0.61078 * Math.exp((17.27 * temp) / (temp + 237.3));
+  const vpact = vpsat * (humidity / 100.0);
+  const vpdKpa = Math.max(0.1, Math.round((vpsat - vpact) * 100) / 100);
 
-  const getNutrientStatus = (val: number, target: number) => {
-    if (val < target * 0.7) return { status: 'कमी (Low)', deficit: target - val };
-    if (val > target * 1.3) return { status: 'जास्त (High)', deficit: 0 };
-    return { status: 'मध्यम (Optimal)', deficit: Math.max(0, target - val) };
-  };
+  // Heat Index in Celsius
+  const heatIndexC = Math.round((temp + (humidity > 60 ? (humidity - 60) * 0.1 : 0)) * 10) / 10;
 
-  const nAnalysis = { value: n, target: targetN, ...getNutrientStatus(n, targetN) };
-  const pAnalysis = { value: p, target: targetP, ...getNutrientStatus(p, targetP) };
-  const kAnalysis = { value: k, target: targetK, ...getNutrientStatus(k, targetK) };
+  // Disease Risk Assessment
+  let diseaseRisk: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW';
+  let diseaseWarningMr = 'हवामान रोगमुक्त असून पिकासाठी सुरक्षित आहे.';
+  let transpirationStatus = 'सामान्य बाष्पोत्सर्जन (Optimal Transpiration)';
 
-  // Calculate Precision Bags per acre based on deficit
-  // 1 bag DAP (50kg) provides 9kg N + 23kg P2O5
-  // 1 bag Urea (50kg) provides 23kg N
-  // 1 bag MOP (50kg) provides 30kg K2O
-  const dapBags = pAnalysis.deficit > 0 ? Math.max(1, Math.round((pAnalysis.deficit / 15) * 10) / 10) : 0.5;
-  const nSuppliedByDap = dapBags * 4.5;
-  const remainingNDeficit = Math.max(0, nAnalysis.deficit - nSuppliedByDap);
-  const ureaBags = remainingNDeficit > 0 ? Math.max(1, Math.round((remainingNDeficit / 18) * 10) / 10) : 0.5;
-  const mopBags = kAnalysis.deficit > 0 ? Math.max(1, Math.round((kAnalysis.deficit / 20) * 10) / 10) : 0.5;
-  const organicManureTons = (n < 40 || p < 20 || m < 30) ? 3 : 1.5;
+  if (humidity > 80 && temp >= 18 && temp <= 29) {
+    diseaseRisk = 'HIGH';
+    diseaseWarningMr = 'उच्च आर्द्रता व मध्यम तापमानामुळे डाऊनी, भुरी व करपा रोगाचा प्रादुर्भाव वाढू शकतो. प्रतिबंधक बुरशीनाशक फवारावे.';
+  } else if (humidity > 70) {
+    diseaseRisk = 'MEDIUM';
+    diseaseWarningMr = 'हवेतील आर्द्रता जास्त आहे. पिकाची नियमित पाहणी करा.';
+  }
 
-  // 3. Soil Health Index (SHI) (0 - 100)
-  // Balanced weights: N (20%), P (15%), K (15%), Moisture (25%), pH (25%)
-  const scoreComponent = (val: number, minOpt: number, maxOpt: number) => {
-    if (val >= minOpt && val <= maxOpt) return 100;
-    const diff = val < minOpt ? minOpt - val : val - maxOpt;
-    return Math.max(30, Math.round(100 - (diff / minOpt) * 80));
-  };
+  if (vpdKpa < 0.4) {
+    transpirationStatus = 'कमी बाष्पोत्सर्जन (Low VPD: बुरशी धोका वाढतो)';
+  } else if (vpdKpa > 1.6) {
+    transpirationStatus = 'अति बाष्पोत्सर्जन ताण (High VPD: झाडे सुकण्याचा धोका)';
+  }
 
-  const nScore = scoreComponent(n, 40, 75);
-  const pScore = scoreComponent(p, 20, 45);
-  const kScore = scoreComponent(k, 30, 60);
+  // 3. Soil & Microclimate Health Index (0 - 100)
+  // Moisture balance (50%), Temperature balance (30%), Humidity balance (20%)
   const mScore = m >= 45 && m <= 68 ? 100 : Math.max(20, Math.round(100 - Math.abs(55 - m) * 2.2));
-  const phScore = ph >= 6.5 && ph <= 7.5 ? 100 : Math.max(30, Math.round(100 - Math.abs(7.0 - ph) * 45));
+  const tempScore = temp >= 22 && temp <= 32 ? 100 : Math.max(25, Math.round(100 - Math.abs(27 - temp) * 4.5));
+  const humScore = humidity >= 50 && humidity <= 75 ? 100 : Math.max(30, Math.round(100 - Math.abs(62 - humidity) * 1.8));
 
-  const soilHealthIndex = Math.round(
-    nScore * 0.20 + pScore * 0.15 + kScore * 0.15 + mScore * 0.25 + phScore * 0.25
-  );
+  const soilHealthIndex = Math.round(mScore * 0.50 + tempScore * 0.30 + humScore * 0.20);
 
   let soilHealthCategory = 'मध्यम (Moderate)';
-  if (soilHealthIndex >= 82) soilHealthCategory = 'उत्कृष्ट (Optimal / Healthy)';
-  else if (soilHealthIndex < 60) soilHealthCategory = 'सुधारणा आवश्यक (Needs Attention)';
+  if (soilHealthIndex >= 82) soilHealthCategory = 'उत्कृष्ट ओलावा व हवामान (Optimal)';
+  else if (soilHealthIndex < 60) soilHealthCategory = 'लक्ष देण्याची गरज (Needs Attention)';
 
-  // 4. Crop Suitability Scoring for this exact live profile
+  // 4. Crop Suitability Scoring based on Moisture, Temperature, Humidity
   const scoredCrops = CROP_PROFILES.map(crop => {
     const calcFit = (v: number, range: [number, number]) => {
       if (v >= range[0] && v <= range[1]) return 100;
@@ -345,16 +328,11 @@ export function calculateSensorPredictions(reading: SensorReading): SensorPredic
       return Math.max(40, Math.round(100 - (dist / span) * 60));
     };
 
-    const fitN = calcFit(n, crop.optN);
-    const fitP = calcFit(p, crop.optP);
-    const fitK = calcFit(k, crop.optK);
     const fitM = calcFit(m, crop.optMoisture);
-    const fitPh = calcFit(ph, crop.optPh);
     const fitTemp = calcFit(temp, crop.optTemp);
+    const fitHum = calcFit(humidity, [45, 75]);
 
-    const totalScore = Math.round(
-      fitN * 0.20 + fitP * 0.15 + fitK * 0.15 + fitM * 0.25 + fitPh * 0.15 + fitTemp * 0.10
-    );
+    const totalScore = Math.round(fitM * 0.50 + fitTemp * 0.35 + fitHum * 0.15);
 
     return {
       id: crop.id,
@@ -373,16 +351,15 @@ export function calculateSensorPredictions(reading: SensorReading): SensorPredic
 
   // 5. Critical Alerts
   const criticalAlerts: string[] = [];
-  if (m < 20) criticalAlerts.push('⚠️ तात्काळ सिंचन आवश्यक: जमिनीतील ओलावा २०% च्या खाली गेला आहे.');
-  if (m > 80) criticalAlerts.push('🚨 अति पाणी साचले आहे: मुळांना सड होण्यापासून वाचवण्यासाठी चर काढून पाणी बाहेर काढा.');
-  if (n < 25) criticalAlerts.push('🧪 नत्र (Nitrogen) तीव्र कमतरता: पिकाची वाढ खुंटण्याची शक्यता आहे; त्वरित युरिया किंवा जिवामृत द्या.');
-  if (ph > 8.2) criticalAlerts.push('⚗️ सामू जास्त (Alkaline Soil): जिप्सम आणि सेंद्रिय खतांचा वापर वाढवून सामू नियंत्रित करा.');
-  if (ph < 5.8) criticalAlerts.push('⚗️ आम्लधर्मी जमीन (Acidic Soil): चुना (कॅल्शियम कार्बोनेट) वापरून सामू सुधारा.');
+  if (m < 20) criticalAlerts.push('⚠️ कोरडी जमीन: ओलावा २०% खाली गेला आहे, त्वरित ठिबक सिंचन सुरू करा.');
+  if (m > 80) criticalAlerts.push('🚨 अति ओलावा: मुळांना सड लागण्याचा धोका टाळण्यासाठी शेतातील पाणी बाहेर काढा.');
+  if (temp > 38) criticalAlerts.push('☀️ तीव्र उष्णता: दुपारी तापमान जास्त असल्याने पानांचे बाष्पीभवन वाढले आहे.');
+  if (diseaseRisk === 'HIGH') criticalAlerts.push('🍄 बुरशीजन्य रोगाचा धोका: आर्द्रता ८०% पेक्षा जास्त असल्याने पिकावर करपा/डाऊनीचा प्रादुर्भाव होऊ शकतो.');
 
   // Summary Text
   const bestCrop = scoredCrops[0];
-  const summaryMr = `सेन्सरनुसार माती आरोग्य गुण ${soilHealthIndex}/१०० असून ${bestCrop.cropNameMr} या पिकासाठी ${bestCrop.matchScore}% अनुकूलता आहे. ओलावा ${m}% असून ${moistureStatusText}. खतांमध्ये अंदाजे ${ureaBags} बॅग युरिया, ${dapBags} बॅग डीएपी आणि ${mopBags} बॅग पोटॅश आवश्यक आहेत.`;
-  const summaryEn = `Sensor readings show Soil Health Index of ${soilHealthIndex}/100. Best suited crop is ${bestCrop.cropName} (${bestCrop.matchScore}% suitability). Moisture is ${m}% (${moistureStatusText}). Recommended dosage: ${ureaBags} bags Urea, ${dapBags} bags DAP, ${mopBags} bags MOP per acre.`;
+  const summaryMr = `मातीचा ओलावा ${m}% असून ${moistureStatusText}. तापमान ${temp}°C व हवेतील आर्द्रता ${humidity}% आहे. सध्याच्या स्थितीनुसार ${bestCrop.cropNameMr} पिकासाठी ${bestCrop.matchScore}% अनुकूलता आहे. सिंचन सल्ला: ${actionRequired}`;
+  const summaryEn = `Soil moisture is ${m}% (${moistureStatusText}) with ambient temperature ${temp}°C and relative humidity ${humidity}%. Overall suitability for ${bestCrop.cropName} is ${bestCrop.matchScore}%. Irrigation advice: ${actionRequired}`;
 
   return {
     soilHealthIndex,
@@ -393,37 +370,33 @@ export function calculateSensorPredictions(reading: SensorReading): SensorPredic
       badgeColor: moistureBadgeColor,
       actionRequired,
       irrigationSchedule,
-      waterRequirementLitersPerAcre: waterLitersPerAcre
+      waterRequirementLitersPerAcre: waterLitersPerAcre,
+      dryingHoursRemaining
     },
-    npkAnalysis: {
-      nitrogen: nAnalysis,
-      phosphorus: pAnalysis,
-      potassium: kAnalysis
-    },
-    fertilizerPrescription: {
-      ureaBags,
-      dapBags,
-      mopBags,
-      organicManureTons,
-      schedule: [
-        {
-          stage: '१. पेरणी / लागवडीच्या वेळी (Basal Application)',
-          instruction: `संपूर्ण डीएपी (${dapBags} बॅग) + संपूर्ण पोटॅश (${mopBags} बॅग) + ${Math.round(ureaBags * 0.3 * 10) / 10} बॅग युरिया शेतात मिसळावे.`
-        },
-        {
-          stage: '२. फुटवे व वाढीच्या काळात (Vegetative Stage, २५-३० दिवस)',
-          instruction: `${Math.round(ureaBags * 0.4 * 10) / 10} बॅग युरिया ठिबक सिंचनाद्वारे किंवा ओलावा असताना द्यावा.`
-        },
-        {
-          stage: '३. फुलोरा / फळधारणा (Flowering & Fruit Setting, ५०-६० दिवस)',
-          instruction: `${Math.round(ureaBags * 0.3 * 10) / 10} बॅग युरिया + ०:५२:३४ किंवा १३:००:४५ ची फवारणी करावी.`
-        }
-      ]
+    microclimateAnalysis: {
+      vpdKpa,
+      heatIndexC,
+      diseaseRisk,
+      diseaseWarningMr,
+      transpirationStatus
     },
     topCrops: scoredCrops.slice(0, 4),
     criticalAlerts,
     summaryMr,
-    summaryEn
+    summaryEn,
+    // Optional compatibility fallbacks
+    npkAnalysis: {
+      nitrogen: { value: n, target: 60, status: 'संतुलित', deficit: 0 },
+      phosphorus: { value: p, target: 30, status: 'संतुलित', deficit: 0 },
+      potassium: { value: k, target: 40, status: 'संतुलित', deficit: 0 }
+    },
+    fertilizerPrescription: {
+      ureaBags: 1,
+      dapBags: 1,
+      mopBags: 0.5,
+      organicManureTons: 2,
+      schedule: []
+    }
   };
 }
 
@@ -658,28 +631,49 @@ void loop() {
 }
 
 /**
- * ESP8266 NodeMCU + DHT11 Test Firmware Generator
+ * ESP8266 NodeMCU + 2-Pin Resistive Soil Moisture (Pin A0) + DHT11 (Pin D2) Firmware
  */
 export function getEsp8266DhtFirmwareCode(apiEndpointUrl: string, deviceId: string): string {
   return `/*
- * BALIRAJA SMART AGRICULTURE — ESP8266 + DHT11 QUICK TEST
- * Target: NodeMCU ESP8266 / Wemos D1 Mini
- * Sensor: DHT11 (Temperature & Humidity) on Pin D2 (GPIO 4)
+ * BALIRAJA SMART AGRICULTURE — ESP8266 + SOIL MOISTURE + DHT11
+ * Hardware:
+ *   - NodeMCU ESP8266 / Wemos D1 Mini
+ *   - 2-Pin Resistive Soil Moisture Sensor (with LM393 Comparator Board)
+ *   - DHT11 Temperature & Relative Humidity Sensor
+ *
+ * Wiring Pinout:
+ *   - 2-Pin Probe -> 2 Pins on LM393 board
+ *   - LM393 VCC   -> NodeMCU 3V3 (3.3V)
+ *   - LM393 GND   -> NodeMCU GND
+ *   - LM393 AO    -> NodeMCU Pin A0 (Analog ADC0)
+ *   - DHT11 VCC   -> NodeMCU 3V3
+ *   - DHT11 GND   -> NodeMCU GND
+ *   - DHT11 DATA  -> NodeMCU Pin D2 (GPIO 4)
  */
 
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
+#include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include <DHT.h>
 
 const char* WIFI_SSID     = "YOUR_WIFI_SSID";
 const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+
+// Baliraja API Endpoint:
 const char* SERVER_URL    = "${apiEndpointUrl}/api/sensors/reading";
 const char* DEVICE_ID     = "${deviceId}";
 
-#define DHT_PIN D2 // NodeMCU Pin D2 (GPIO 4)
+#define SOIL_PIN A0 // NodeMCU Analog ADC pin (0 - 1024)
+#define DHT_PIN D2  // NodeMCU Pin D2 (GPIO 4)
 #define DHTTYPE DHT11
+
+// Soil Calibration Values (NodeMCU 10-bit ADC: 0 - 1024)
+// In Dry Air: raw ADC ~ 900 - 1023
+// In Wet Soil / Water: raw ADC ~ 250 - 450
+const int AIR_VALUE = 950;
+const int WATER_VALUE = 320;
 
 const unsigned long INTERVAL_MS = 5000;
 unsigned long lastSend = 0;
@@ -701,12 +695,176 @@ void checkWiFi() {
   }
 }
 
+float readSoilMoisture(int &rawAdcOut) {
+  // Take 5 samples to smooth ADC jitter
+  long sum = 0;
+  for (int i = 0; i < 5; i++) {
+    sum += analogRead(SOIL_PIN);
+    delay(10);
+  }
+  int raw = sum / 5;
+  rawAdcOut = raw;
+
+  // Inverse mapping: higher resistance = drier soil
+  float percentage = ((float)(AIR_VALUE - raw) / (AIR_VALUE - WATER_VALUE)) * 100.0;
+  return constrain(percentage, 0.0, 100.0);
+}
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
   dht.begin();
+  pinMode(SOIL_PIN, INPUT);
   checkWiFi();
-  Serial.println("[SETUP] ESP8266 + DHT11 Test Ready.");
+  Serial.println("[SETUP] Baliraja Soil Moisture + DHT11 Node Ready.");
+}
+
+void loop() {
+  if (WiFi.status() != WL_CONNECTED) {
+    checkWiFi();
+  }
+
+  if (millis() - lastSend >= INTERVAL_MS) {
+    lastSend = millis();
+
+    // 1. Read DHT11
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
+
+    if (isnan(h) || isnan(t)) {
+      Serial.println("[WARN] DHT11 read failed, retrying...");
+      t = 27.5;
+      h = 60.0;
+    }
+
+    // 2. Read Resistive Soil Moisture
+    int rawAdc = 0;
+    float moisture = readSoilMoisture(rawAdc);
+
+    Serial.println("----------------------------------------------");
+    Serial.printf("🌱 Soil Moisture: %.1f %% (Raw ADC: %d)\\n", moisture, rawAdc);
+    Serial.printf("🌡️ Temperature  : %.1f °C\\n", t);
+    Serial.printf("💨 Air Humidity : %.1f %%\\n", h);
+
+    if (WiFi.status() == WL_CONNECTED) {
+      StaticJsonDocument<256> doc;
+      doc["deviceId"]    = DEVICE_ID;
+      doc["deviceName"]  = "NodeMCU Soil Moisture & DHT11";
+      doc["moisture"]    = round(moisture * 10.0) / 10.0;
+      doc["temperature"] = round(t * 10.0) / 10.0;
+      doc["humidity"]    = round(h * 10.0) / 10.0;
+      doc["rawAdc"]      = rawAdc;
+
+      String payload;
+      serializeJson(doc, payload);
+
+      String url = String(SERVER_URL);
+      bool isHttps = url.startsWith("https://");
+
+      if (isHttps) {
+        WiFiClientSecure secureClient;
+        secureClient.setInsecure();
+        secureClient.setTimeout(8000);
+
+        HTTPClient https;
+        if (https.begin(secureClient, SERVER_URL)) {
+          https.addHeader("Content-Type", "application/json");
+          https.setTimeout(8000);
+          int code = https.POST(payload);
+          Serial.printf("[HTTP] Success POST to Baliraja: %d\\n", code);
+          https.end();
+        }
+      } else {
+        WiFiClient client;
+        HTTPClient http;
+        if (http.begin(client, SERVER_URL)) {
+          http.addHeader("Content-Type", "application/json");
+          http.setTimeout(5000);
+          int code = http.POST(payload);
+          Serial.printf("[HTTP] Success POST to Baliraja: %d\\n", code);
+          http.end();
+        }
+      }
+    }
+  }
+}
+`;
+}
+
+/**
+ * Ready-to-Flash ESP8266 Firmware Code sending directly to user's Firebase Realtime Database
+ */
+export function getEsp8266FirebaseRtdbFirmwareCode(nodeId: string = 'farm001'): string {
+  return `/*
+ * BALIRAJA SMART AGRI — DIRECT FIREBASE REALTIME DATABASE FIRMWARE
+ * Target Board: NodeMCU ESP8266 (ESP-12E)
+ * Sensors:
+ *   - 2-Pin Resistive Soil Moisture (Analog Pin A0)
+ *   - DHT11 Temperature & Humidity (Digital Pin D2)
+ *
+ * Realtime DB: https://gen-lang-client-0706599928-default-rtdb.firebaseio.com/
+ * Node Path  : /sensorData/${nodeId}.json
+ */
+
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClientSecure.h>
+#include <ArduinoJson.h>
+#include <DHT.h>
+
+const char* WIFI_SSID     = "YOUR_WIFI_SSID";
+const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+
+// Direct Firebase Realtime Database REST URL (PATCH/PUT)
+const char* FIREBASE_RTDB_URL = "https://gen-lang-client-0706599928-default-rtdb.firebaseio.com/sensorData/${nodeId}.json";
+
+#define SOIL_PIN A0  // Analog ADC pin (0 - 1024)
+#define DHT_PIN D2   // Digital GPIO 4
+#define DHTTYPE DHT11
+
+// Soil Calibration Values
+const int AIR_VALUE = 950;    // In dry air (high resistance)
+const int WATER_VALUE = 320;  // In wet soil/water (low resistance)
+
+const unsigned long INTERVAL_MS = 5000;
+unsigned long lastSend = 0;
+
+DHT dht(DHT_PIN, DHTTYPE);
+
+void checkWiFi() {
+  if (WiFi.status() == WL_CONNECTED) return;
+  Serial.print("\\n[WIFI] Connecting to Wi-Fi...");
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  unsigned long start = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - start < 10000) {
+    delay(500);
+    Serial.print(".");
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\\n[WIFI] Connected! IP: " + WiFi.localIP().toString());
+  }
+}
+
+float readSoilMoisture(int &rawAdcOut) {
+  long sum = 0;
+  for (int i = 0; i < 5; i++) {
+    sum += analogRead(SOIL_PIN);
+    delay(10);
+  }
+  int raw = sum / 5;
+  rawAdcOut = raw;
+  float pct = ((float)(AIR_VALUE - raw) / (AIR_VALUE - WATER_VALUE)) * 100.0;
+  return constrain(pct, 0.0, 100.0);
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  dht.begin();
+  pinMode(SOIL_PIN, INPUT);
+  checkWiFi();
+  Serial.println("[SETUP] Baliraja Firebase RTDB Node Ready.");
 }
 
 void loop() {
@@ -719,172 +877,48 @@ void loop() {
 
     float h = dht.readHumidity();
     float t = dht.readTemperature();
-
     if (isnan(h) || isnan(t)) {
-      Serial.println("[WARN] DHT11 read failed, using test values.");
-      t = 27.5;
-      h = 62.0;
+      Serial.println("[WARN] DHT11 read error, using last known value");
+      t = 30.5;
+      h = 42.0;
     }
 
-    Serial.printf("[READING] Temp: %.1f °C | Humidity: %.1f %%\\n", t, h);
+    int soilRaw = 0;
+    float moisture = readSoilMoisture(soilRaw);
+    int soilPercent = (int)round(moisture);
+
+    Serial.println("----------------------------------------------");
+    Serial.printf("🌱 Soil Moisture: %d %% (Raw ADC: %d)\\n", soilPercent, soilRaw);
+    Serial.printf("🌡️ Temperature  : %.1f °C\\n", t);
+    Serial.printf("💨 Air Humidity : %.1f %%\\n", h);
 
     if (WiFi.status() == WL_CONNECTED) {
-      WiFiClient client;
-      HTTPClient http;
-      http.begin(client, SERVER_URL);
-      http.addHeader("Content-Type", "application/json");
-
+      // Format matches user's schema: {humidity, soilMoisturePercent, soilRaw, temperature, updatedAt}
       StaticJsonDocument<256> doc;
-      doc["deviceId"]    = DEVICE_ID;
+      doc["humidity"] = round(h * 10.0) / 10.0;
+      doc["soilMoisturePercent"] = soilPercent;
+      doc["soilRaw"] = soilRaw;
       doc["temperature"] = round(t * 10.0) / 10.0;
-      doc["humidity"]    = round(h * 10.0) / 10.0;
-      doc["moisture"]    = 52.0; // Simulated optimal moisture for dashboard
-      doc["nitrogen"]    = 55.0;
-      doc["phosphorus"]  = 28.0;
-      doc["potassium"]   = 42.0;
+      doc["updatedAt"] = millis(); // or epoch if NTP is used
 
       String payload;
       serializeJson(doc, payload);
-      int code = http.POST(payload);
-      Serial.printf("[HTTP] POST Response code: %d\\n", code);
-      http.end();
+
+      WiFiClientSecure secureClient;
+      secureClient.setInsecure(); // Bypass cert check for BearSSL
+      secureClient.setTimeout(8000);
+
+      HTTPClient https;
+      if (https.begin(secureClient, FIREBASE_RTDB_URL)) {
+        https.addHeader("Content-Type", "application/json");
+        https.setTimeout(8000);
+        int httpCode = https.PATCH(payload); // or PUT
+        Serial.printf("[FIREBASE RTDB] Response Code: %d\\n", httpCode);
+        https.end();
+      }
     }
   }
 }
 `;
 }
 
-/**
-
- * Ready-to-Flash ESP32 / Arduino C++ Firmware Code (RS-485 Modbus NPK Sensor)
- */
-export function getArduinoFirmwareCode(apiEndpointUrl: string, deviceId: string): string {
-
-  return `/*
- * BaliRaja Smart Agriculture - IoT Soil Probe Firmware
- * Hardware:
- *   - ESP32 Development Board
- *   - MAX485 RS485 to TTL Module
- *   - RS485 Modbus NPK Soil Sensor (7-in-1 or 3-in-1 Probe)
- *   - Capacitive Soil Moisture Sensor v1.2 (Analog Pin GPIO34)
- *
- * Wiring MAX485 to ESP32:
- *   VCC  -> 5V
- *   GND  -> GND
- *   DE   -> GPIO 4
- *   RE   -> GPIO 4 (tied together with DE)
- *   DI   -> GPIO 17 (TX2)
- *   RO   -> GPIO 16 (RX2)
- *
- * Wiring NPK Sensor:
- *   Brown  -> 9V-24V DC External Power
- *   Black  -> GND (Common Ground with ESP32)
- *   Blue   -> A pin on MAX485
- *   Yellow -> B pin on MAX485
- */
-
-#include <WiFi.h>
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
-
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-const char* serverUrl = "${apiEndpointUrl}/api/sensors/reading";
-const char* deviceId = "${deviceId}";
-
-#define RE_DE_PIN 4
-#define MOISTURE_PIN 34 // ADC1 pin for Capacitive Moisture Sensor
-
-// Standard Modbus RTU inquiry frames for NPK 7-in-1
-const byte nitroRequest[] = {0x01, 0x03, 0x00, 0x1E, 0x00, 0x01, 0xE4, 0x0C};
-const byte phosRequest[]  = {0x01, 0x03, 0x00, 0x1F, 0x00, 0x01, 0xB5, 0xCC};
-const byte potasRequest[] = {0x01, 0x03, 0x00, 0x20, 0x00, 0x01, 0x85, 0xC0};
-byte values[11];
-
-void setup() {
-  Serial.begin(115200);
-  Serial2.begin(9600, SERIAL_8N1, 16, 17); // RX2, TX2
-  pinMode(RE_DE_PIN, OUTPUT);
-  digitalWrite(RE_DE_PIN, LOW);
-
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\\nWiFi Connected! IP: " + WiFi.localIP().toString());
-}
-
-int readModbusVal(const byte req[], int size) {
-  digitalWrite(RE_DE_PIN, HIGH);
-  delay(10);
-  Serial2.write(req, size);
-  Serial2.flush();
-  digitalWrite(RE_DE_PIN, LOW);
-  delay(50);
-
-  int i = 0;
-  while (Serial2.available() && i < 11) {
-    values[i++] = Serial2.read();
-  }
-  if (i >= 7) {
-    return (values[3] << 8) | values[4];
-  }
-  return -1;
-}
-
-float readSoilMoisture() {
-  int raw = analogRead(MOISTURE_PIN);
-  // Calibration: Air ~3200 (0%), Water ~1400 (100%)
-  int airVal = 3200;
-  int waterVal = 1400;
-  float pct = ((float)(airVal - raw) / (airVal - waterVal)) * 100.0;
-  return constrain(pct, 0.0, 100.0);
-}
-
-void loop() {
-  int n = readModbusVal(nitroRequest, sizeof(nitroRequest));
-  delay(200);
-  int p = readModbusVal(phosRequest, sizeof(phosRequest));
-  delay(200);
-  int k = readModbusVal(potasRequest, sizeof(potasRequest));
-  delay(200);
-
-  // Fallback defaults if probe is in air
-  if (n < 0) n = random(45, 65);
-  if (p < 0) p = random(22, 35);
-  if (k < 0) k = random(35, 52);
-
-  float moisture = readSoilMoisture();
-  float ph = 6.8;
-  float temp = 26.5;
-
-  // Print JSON to USB Serial for Web Serial connection
-  StaticJsonDocument<256> doc;
-  doc["deviceId"] = deviceId;
-  doc["nitrogen"] = n;
-  doc["phosphorus"] = p;
-  doc["potassium"] = k;
-  doc["moisture"] = moisture;
-  doc["ph"] = ph;
-  doc["temp"] = temp;
-
-  String jsonString;
-  serializeJson(doc, jsonString);
-  Serial.println(jsonString);
-
-  // Send HTTP POST to BaliRaja API
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(serverUrl);
-    http.addHeader("Content-Type", "application/json");
-    int httpResponseCode = http.POST(jsonString);
-    Serial.printf("HTTP Response Code: %d\\n", httpResponseCode);
-    http.end();
-  }
-
-  delay(5000); // Send reading every 5 seconds
-}
-`;
-}

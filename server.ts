@@ -12,18 +12,14 @@ async function startServer() {
 
   app.use(express.json());
 
-  // In-memory IoT Sensor buffer for NPK and Soil Moisture readings
+  // In-memory IoT Sensor buffer for Soil Moisture & DHT11 readings
   let latestSensorReading = {
-    deviceId: "BALIRAJA-ESP32-01",
-    deviceName: "Main Plot (Nashik Black Clay Loam)",
-    nitrogen: 55,
-    phosphorus: 28,
-    potassium: 42,
-    moisture: 52,
-    ph: 6.8,
-    temperature: 26.5,
-    ec: 410,
-    battery: 92,
+    deviceId: "BALIRAJA-ESP8266-01",
+    deviceName: "NodeMCU Soil Moisture & DHT11",
+    moisture: 52.0,
+    temperature: 28.5,
+    humidity: 62.0,
+    rawAdc: 560,
     timestamp: new Date().toISOString(),
     connectionType: "wifi"
   };
@@ -35,22 +31,50 @@ async function startServer() {
     res.json({ status: "ok", env: process.env.NODE_ENV });
   });
 
-  // IoT Sensor Ingestion Endpoint (POST by ESP32, Arduino, NodeMCU, LoRa gateway, or Web Serial)
-  app.post("/api/sensors/reading", (req, res) => {
+  // Firebase IoT Configuration endpoint (Both Realtime DB and Firestore)
+  app.get("/api/sensors/firebase-config", (req, res) => {
+    res.json({
+      success: true,
+      projectId: "gen-lang-client-0706599928",
+      rtdbUrl: "https://gen-lang-client-0706599928-default-rtdb.firebaseio.com",
+      activePath: "/sensorData/farm001",
+      firestoreDatabaseId: "ai-studio-167a4e08-a433-48d2-a489-dbf5170057ac",
+      collection: "sensorReadings",
+      restEndpoint: "https://gen-lang-client-0706599928-default-rtdb.firebaseio.com/sensorData/farm001.json"
+    });
+  });
+
+  // Direct fetch from user's live Firebase Realtime Database
+  app.get("/api/sensors/rtdb/latest", async (req, res) => {
+    try {
+      const response = await fetch("https://gen-lang-client-0706599928-default-rtdb.firebaseio.com/sensorData.json");
+      if (!response.ok) {
+        return res.status(502).json({ error: "Failed to fetch from Firebase Realtime DB" });
+      }
+      const data = await response.json();
+      res.json({ success: true, data });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // IoT Sensor Ingestion Endpoint (POST by NodeMCU ESP8266, ESP32, Arduino, or Web Serial)
+  app.post("/api/sensors/reading", async (req, res) => {
     try {
       const data = req.body || {};
+      const moisture = Number(data.moisture ?? data.m ?? 50);
+      const temperature = Number(data.temperature ?? data.temp ?? data.t ?? 26.5);
+      const humidity = Number(data.humidity ?? data.h ?? 60.0);
+      const rawAdc = Number(data.rawAdc ?? data.adc ?? 0);
+
       const newReading = {
         id: `reading_${Date.now()}`,
-        deviceId: data.deviceId || "ESP32-SOIL-PROBE",
-        deviceName: data.deviceName || "Soil Sensor Node",
-        nitrogen: Number(data.nitrogen ?? data.n ?? 50),
-        phosphorus: Number(data.phosphorus ?? data.p ?? 25),
-        potassium: Number(data.potassium ?? data.k ?? 40),
-        moisture: Number(data.moisture ?? data.m ?? 50),
-        ph: Number(data.ph ?? 6.8),
-        temperature: Number(data.temperature ?? data.temp ?? 26.5),
-        ec: Number(data.ec ?? 400),
-        battery: Number(data.battery ?? 95),
+        deviceId: data.deviceId || "BALIRAJA-ESP8266-01",
+        deviceName: data.deviceName || "Soil Moisture & DHT11 Node",
+        moisture: Math.round(moisture * 10) / 10,
+        temperature: Math.round(temperature * 10) / 10,
+        humidity: Math.round(humidity * 10) / 10,
+        rawAdc,
         timestamp: new Date().toISOString(),
         connectionType: data.connectionType || "wifi"
       };
@@ -59,26 +83,62 @@ async function startServer() {
       sensorHistory.unshift(newReading);
       if (sensorHistory.length > 100) sensorHistory.pop();
 
-      // Quick moisture & NPK calculation
-      const moistureStatus = newReading.moisture < 22 
+      // Soil moisture status evaluation
+      const moistureStatus = moisture < 22 
         ? "CRITICAL_DRY" 
-        : newReading.moisture < 40 
+        : moisture < 40 
           ? "LOW_MOISTURE" 
-          : newReading.moisture <= 70 
+          : moisture <= 70 
             ? "OPTIMAL" 
             : "WATERLOGGED";
 
+      // Fungal disease risk from DHT11 humidity and temperature
+      const diseaseRisk = (humidity > 80 && temperature >= 20 && temperature <= 28)
+        ? "HIGH"
+        : (humidity > 70) ? "MEDIUM" : "LOW";
+
+      // Irrigation calculation in liters
+      const waterRequirementLitersPerAcre = moisture < 40 
+        ? Math.round((55 - moisture) * 1100) 
+        : 0;
+
+      // Asynchronously attempt to sync to Firestore REST API (non-blocking)
+      try {
+        const firestoreUrl = "https://firestore.googleapis.com/v1/projects/gen-lang-client-0706599928/databases/ai-studio-167a4e08-a433-48d2-a489-dbf5170057ac/documents/sensorReadings";
+        fetch(firestoreUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fields: {
+              deviceId: { stringValue: newReading.deviceId },
+              deviceName: { stringValue: newReading.deviceName },
+              moisture: { doubleValue: newReading.moisture },
+              temperature: { doubleValue: newReading.temperature },
+              humidity: { doubleValue: newReading.humidity },
+              rawAdc: { integerValue: String(newReading.rawAdc) },
+              timestamp: { stringValue: newReading.timestamp }
+            }
+          })
+        }).catch(() => {
+          // Ignore offline/auth errors in async sync
+        });
+      } catch (e) {
+        // Continue normally
+      }
+
       res.status(200).json({
         success: true,
-        message: "Sensor reading received successfully",
+        message: "Soil moisture and DHT11 reading recorded successfully",
         reading: newReading,
         instantAssessment: {
           moistureStatus,
-          soilHealthScore: Math.round(
-            (newReading.moisture >= 45 && newReading.moisture <= 68 ? 95 : 60) * 0.35 +
-            (newReading.ph >= 6.5 && newReading.ph <= 7.5 ? 95 : 65) * 0.25 +
-            (newReading.nitrogen >= 40 && newReading.nitrogen <= 75 ? 90 : 60) * 0.40
-          )
+          diseaseRisk,
+          waterRequirementLitersPerAcre,
+          irrigationRecommendation: moisture < 25 
+            ? "तात्काळ ३ तास ठिबक सिंचन द्या (Immediate Drip Irrigation Needed)"
+            : moisture < 40 
+              ? "उद्या सकाळी १.५ तास ठिबक द्या (Light Irrigation Needed)"
+              : "सध्या पाणी देण्याची गरज नाही (Soil Moisture is Optimal)"
         }
       });
     } catch (error: any) {

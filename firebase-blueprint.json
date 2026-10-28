@@ -127,9 +127,28 @@
         "read": { "type": "boolean", "description": "Whether the message has been read" }
       },
       "required": ["chatId", "senderUid", "text", "createdAt"]
+    },
+    "SensorReading": {
+      "title": "SensorReading",
+      "description": "Live IoT soil moisture and DHT11 telemetry reading",
+      "type": "object",
+      "properties": {
+        "deviceId": { "type": "string", "description": "Hardware device ID" },
+        "deviceName": { "type": "string", "description": "Device display name" },
+        "moisture": { "type": "number", "description": "Soil moisture percentage (0-100)" },
+        "temperature": { "type": "number", "description": "Temperature in Celsius from DHT11" },
+        "humidity": { "type": "number", "description": "Air relative humidity percentage from DHT11" },
+        "rawAdc": { "type": "number", "description": "Raw analog ADC value from moisture probe" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Timestamp" }
+      },
+      "required": ["deviceId", "moisture", "temperature"]
     }
   },
   "firestore": {
+    "/sensorReadings/{readingId}": {
+      "schema": "SensorReading",
+      "description": "Real-time soil moisture and DHT11 readings uploaded from IoT hardware"
+    },
     "/users/{uid}": {
       "schema": "User",
       "description": "User profiles indexed by UID"

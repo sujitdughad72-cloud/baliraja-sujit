@@ -274,5 +274,36 @@ export const api = {
       }
       return [];
     },
+    getRtdbLatest: async () => {
+      try {
+        const res = await fetch('/api/sensors/rtdb/latest');
+        if (res.ok) {
+          const json = await res.json();
+          return json.data;
+        }
+      } catch (e) {
+        // Fallback to direct RTDB fetch
+      }
+      try {
+        const directRes = await fetch('https://gen-lang-client-0706599928-default-rtdb.firebaseio.com/sensorData.json');
+        if (directRes.ok) {
+          return await directRes.json();
+        }
+      } catch (e) {}
+      return null;
+    },
+    syncRtdbReading: async (nodeId: string, payload: any) => {
+      try {
+        const url = `https://gen-lang-client-0706599928-default-rtdb.firebaseio.com/sensorData/${nodeId}.json`;
+        const res = await fetch(url, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        return res.ok;
+      } catch (e) {
+        return false;
+      }
+    }
   },
 };

@@ -79,16 +79,18 @@ export interface SensorReading {
   id?: string;
   deviceId: string;
   deviceName?: string;
-  nitrogen: number;       // mg/kg
-  phosphorus: number;     // mg/kg
-  potassium: number;      // mg/kg
   moisture: number;       // % volumetric soil moisture
-  ph: number;             // pH value (3.5 - 9.5)
-  temperature: number;    // °C
+  temperature: number;    // °C (from DHT11 or probe)
+  humidity?: number;      // % relative humidity (from DHT11)
+  rawAdc?: number;        // Raw ADC reading (0-1024 or 0-4095)
+  nitrogen?: number;      // Optional mg/kg
+  phosphorus?: number;    // Optional mg/kg
+  potassium?: number;     // Optional mg/kg
+  ph?: number;            // Optional pH value (3.5 - 9.5)
   ec?: number;            // Electrical Conductivity µS/cm
   battery?: number;       // %
   timestamp: string;
-  connectionType?: 'serial' | 'ble' | 'wifi' | 'simulated';
+  connectionType?: 'serial' | 'ble' | 'wifi' | 'simulated' | 'firebase';
 }
 
 export interface SensorPredictionResult {
@@ -101,18 +103,14 @@ export interface SensorPredictionResult {
     actionRequired: string;
     irrigationSchedule: string;
     waterRequirementLitersPerAcre: number;
+    dryingHoursRemaining?: number;
   };
-  npkAnalysis: {
-    nitrogen: { value: number; status: string; deficit: number; target: number };
-    phosphorus: { value: number; status: string; deficit: number; target: number };
-    potassium: { value: number; status: string; deficit: number; target: number };
-  };
-  fertilizerPrescription: {
-    ureaBags: number;
-    dapBags: number;
-    mopBags: number;
-    organicManureTons: number;
-    schedule: { stage: string; instruction: string }[];
+  microclimateAnalysis: {
+    vpdKpa: number;           // Vapor Pressure Deficit in kPa
+    heatIndexC: number;       // Real-feel temperature
+    diseaseRisk: 'LOW' | 'MEDIUM' | 'HIGH';
+    diseaseWarningMr: string;
+    transpirationStatus: string;
   };
   topCrops: {
     id: string;
@@ -128,4 +126,16 @@ export interface SensorPredictionResult {
   criticalAlerts: string[];
   summaryMr: string;
   summaryEn: string;
+  npkAnalysis?: {
+    nitrogen: { value: number; status: string; deficit: number; target: number };
+    phosphorus: { value: number; status: string; deficit: number; target: number };
+    potassium: { value: number; status: string; deficit: number; target: number };
+  };
+  fertilizerPrescription?: {
+    ureaBags: number;
+    dapBags: number;
+    mopBags: number;
+    organicManureTons: number;
+    schedule: { stage: string; instruction: string }[];
+  };
 }
