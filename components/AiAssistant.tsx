@@ -353,6 +353,7 @@ const AiAssistant: React.FC = () => {
 
     setChatMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     if (!overrideMsg) setChatInput('');
+    setServiceNotice(null);
     setLoading(true);
 
     let streamedStarted = false;

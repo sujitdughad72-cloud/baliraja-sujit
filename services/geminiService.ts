@@ -52,14 +52,18 @@ export const startAgriChat = (
       });
       clearTimeout(timeoutId);
 
-      if (!res.ok) {
-        throw new Error(`Chat API error: ${res.status}`);
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error(`Server endpoint /api/gemini/chat returned non-JSON (${res.status}). Ensure the full-stack Node server is running.`);
       }
 
       const data = await res.json();
-      const replyText = data.text || "क्षमस्व, प्रतिसाद मिळू शकला नाही.";
-      history.push({ role: 'user', text: message });
-      history.push({ role: 'model', text: replyText });
+      const replyText = data.text || data.errorMessage || "क्षमस्व, प्रतिसाद मिळू शकला नाही.";
+
+      if (res.ok && !data.errorCode) {
+        history.push({ role: 'user', text: message });
+        history.push({ role: 'model', text: replyText });
+      }
 
       return {
         text: replyText,
@@ -68,8 +72,13 @@ export const startAgriChat = (
       };
     } catch (error: any) {
       console.error("Agri chat sendMessage error:", error);
+      const msg = error?.name === 'AbortError'
+        ? "⚠️ प्रतिसाद मिळण्यास विलंब होत आहे (Request Timeout). कृपया पुन्हा प्रयत्न करा."
+        : "⚠️ AI सर्व्हरशी संपर्क होऊ शकला नाही (/api/gemini/chat). कृपया full-stack सर्व्हर सुरू असल्याची खात्री करा.";
       return {
-        text: "नमस्कार शेतकरी बंधू! जमिनीतील ओलावा ५०-६०% दरम्यान राखल्यास पिकाची मुळे निरोगी राहतात. पिकावर कीड किंवा रोगाचा प्रादुर्भाव टाळण्यासाठी वेळेवर प्रतिबंधक फवारणी करावी."
+        text: msg,
+        errorCode: "SERVER_UNREACHABLE",
+        errorMessage: error?.message || "Unable to reach /api/gemini/chat"
       };
     }
   };

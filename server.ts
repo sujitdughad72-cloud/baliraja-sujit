@@ -105,18 +105,14 @@ function withTimeout<T>(promise: Promise<T>, ms: number = 12000): Promise<T> {
   ]);
 }
 
-function getContextualFallbackReply(message: string = ""): string {
-  const m = message.toLowerCase();
-  if (m.includes("हवामान") || m.includes("weather") || m.includes("मौसम")) {
-    return "🌤️ **हवामान व पीक सल्ला:**\nसध्या महाराष्ट्रात तापमान २५°C ते ३२°C दरम्यान कोरडे व अनुकूल आहे. सकाळी किंवा संध्याकाळी सिंचन करणे फायदेशीर ठरेल. पानांवर बुरशी येऊ नये म्हणून ओलावा ५०-६०% दरम्यान ठेवा.";
+function formatApiErrorNotice(apiError: GeminiErrorInfo): string {
+  if (apiError.code === "API_KEY_INVALID" || apiError.code === "PERMISSION_DENIED") {
+    return "⚠️ **AI सेवा सुरू नाही (Invalid/Missing API Key):**\nकृपया **Settings > Secrets** पॅनेलमध्ये वैध `GEMINI_API_KEY` तपासा किंवा निवडा.\n*(Gemini API key is missing or invalid. Please check or select a valid key in Settings > Secrets.)*";
   }
-  if (m.includes("भाव") || m.includes("market") || m.includes("rate") || m.includes("कांदा") || m.includes("सोयाबीन")) {
-    return "💰 **आजचे प्रमुख बाजार भाव (APMC अंदाज):**\n- कांदा (लासलगाव): ₹१,८५० / क्विंटल (कमाल ₹२,२००)\n- सोयाबीन (लातूर): ₹४,४२० / क्विंटल\n- कापूस (अकोला): ₹७,३५० / क्विंटल\n- टोमॅटो (नारायणगाव): ₹१,४०० / क्विंटल";
+  if (apiError.code === "QUOTA_EXCEEDED") {
+    return "⚠️ **AI सेवा मर्यादा पूर्ण (Quota Exceeded):**\nकृपया १ मिनिटानंतर पुन्हा प्रयत्न करा किंवा **Settings > Secrets** मध्ये की तपासा.";
   }
-  if (m.includes("खत") || m.includes("fertilizer") || m.includes("खाद")) {
-    return "🧪 **संतुलित खत व्यवस्थापन:**\nपिकाच्या सुरुवातीच्या टप्प्यात शेणखत/कंपोस्ट व DAP वापरावे. फुटवे व वाढीच्या काळात युरिया दोन टप्प्यांत द्यावा आणि फुलोरा अवस्थेत पोटॅश व सूक्ष्मअन्नद्रव्यांची फवारणी करावी.";
-  }
-  return "🌾 **बळीराजा कृषी सल्ला:**\nजमिनीतील ओलावा ५०-६०% दरम्यान राखल्यास पिकाची मुळे निरोगी राहतात. कीड व बुरशीचा प्रादुर्भाव टाळण्यासाठी पिकांची नियमित पाहणी करून वेळेवर प्रतिबंधक फवारणी करावी.";
+  return `⚠️ **AI सेवा तात्पुरती उपलब्ध नाही:** ${apiError.userMessage}`;
 }
 
 async function startServer() {
@@ -141,7 +137,11 @@ async function startServer() {
 
   // Health check endpoint
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", env: process.env.NODE_ENV });
+    res.json({
+      status: "ok",
+      env: process.env.NODE_ENV,
+      geminiConfigured: Boolean(getApiKey())
+    });
   });
 
   // Firebase IoT Configuration endpoint (Both Realtime DB and Firestore)
@@ -402,9 +402,16 @@ async function startServer() {
       };
     }
 
-    res.json({
-      text: getContextualFallbackReply(message),
-      ...(apiError ? { errorCode: apiError.code, errorMessage: apiError.userMessage } : {})
+    const errorResponse: GeminiErrorInfo = apiError || {
+      code: "UNKNOWN",
+      status: 500,
+      userMessage: "Unable to generate a response right now."
+    };
+
+    res.status(errorResponse.status).json({
+      text: formatApiErrorNotice(errorResponse),
+      errorCode: errorResponse.code,
+      errorMessage: errorResponse.userMessage
     });
   });
 
@@ -456,7 +463,7 @@ async function startServer() {
         }
 
         if (!sentAny) {
-          sendEvent({ chunk: getContextualFallbackReply(message) });
+          sendEvent({ chunk: "क्षमस्व, या प्रश्नाचे उत्तर तयार झाले नाही. कृपया पुन्हा विचारा." });
         }
         sendEvent({ done: true });
         return res.end();
@@ -471,10 +478,14 @@ async function startServer() {
       };
     }
 
-    if (apiError) {
-      sendEvent({ errorCode: apiError.code, errorMessage: apiError.userMessage });
-    }
-    sendEvent({ chunk: getContextualFallbackReply(message) });
+    const finalError: GeminiErrorInfo = apiError || {
+      code: "UNKNOWN",
+      status: 500,
+      userMessage: "Unable to generate a response right now."
+    };
+
+    sendEvent({ errorCode: finalError.code, errorMessage: finalError.userMessage });
+    sendEvent({ chunk: formatApiErrorNotice(finalError) });
     sendEvent({ done: true });
     return res.end();
   });
