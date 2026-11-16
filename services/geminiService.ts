@@ -21,7 +21,9 @@ export const getMarketAdvice = async (productName: string, location: string = "M
     const data = await res.json();
     return {
       text: data.text || "माहिती उपलब्ध नाही.",
-      grounding: data.grounding || []
+      grounding: data.grounding || [],
+      errorCode: data.errorCode as string | undefined,
+      errorMessage: data.errorMessage as string | undefined
     };
   } catch (error: any) {
     console.error("Market advice error:", error);
@@ -37,7 +39,7 @@ export const startAgriChat = (
 ) => {
   const history: { role: string; text: string }[] = [];
 
-  const sendMessage = async ({ message }: { message: string }) => {
+  const sendMessage = async ({ message }: { message: string }): Promise<{ text: string; errorCode?: string; errorMessage?: string }> => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 14000);
@@ -59,7 +61,11 @@ export const startAgriChat = (
       history.push({ role: 'user', text: message });
       history.push({ role: 'model', text: replyText });
 
-      return { text: replyText };
+      return {
+        text: replyText,
+        errorCode: data.errorCode,
+        errorMessage: data.errorMessage
+      };
     } catch (error: any) {
       console.error("Agri chat sendMessage error:", error);
       return {
@@ -71,10 +77,12 @@ export const startAgriChat = (
   const sendMessageStream = async ({
     message,
     onChunk,
+    onError,
   }: {
     message: string;
     onChunk: (accumulatedText: string) => void;
-  }): Promise<{ text: string }> => {
+    onError?: (errorCode: string, errorMessage: string) => void;
+  }): Promise<{ text: string; errorCode?: string; errorMessage?: string }> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -89,6 +97,9 @@ export const startAgriChat = (
       if (!res.ok || !res.body) {
         clearTimeout(timeoutId);
         const fallback = await sendMessage({ message });
+        if (fallback.errorCode && fallback.errorMessage && onError) {
+          onError(fallback.errorCode, fallback.errorMessage);
+        }
         onChunk(fallback.text);
         return fallback;
       }
@@ -97,6 +108,8 @@ export const startAgriChat = (
       const decoder = new TextDecoder();
       let buffer = "";
       let fullText = "";
+      let detectedErrorCode: string | undefined;
+      let detectedErrorMessage: string | undefined;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -113,6 +126,11 @@ export const startAgriChat = (
           if (!jsonStr) continue;
           try {
             const parsed = JSON.parse(jsonStr);
+            if (parsed.errorCode && parsed.errorMessage) {
+              detectedErrorCode = parsed.errorCode;
+              detectedErrorMessage = parsed.errorMessage;
+              onError?.(parsed.errorCode, parsed.errorMessage);
+            }
             if (parsed.chunk) {
               fullText += parsed.chunk;
               onChunk(fullText);
@@ -127,17 +145,27 @@ export const startAgriChat = (
 
       if (!fullText) {
         const fallback = await sendMessage({ message });
+        if (fallback.errorCode && fallback.errorMessage && onError) {
+          onError(fallback.errorCode, fallback.errorMessage);
+        }
         onChunk(fallback.text);
         return fallback;
       }
 
       history.push({ role: 'user', text: message });
       history.push({ role: 'model', text: fullText });
-      return { text: fullText };
+      return {
+        text: fullText,
+        errorCode: detectedErrorCode,
+        errorMessage: detectedErrorMessage
+      };
     } catch (error: any) {
       clearTimeout(timeoutId);
       console.error("Agri chat stream error:", error);
       const fallback = await sendMessage({ message });
+      if (fallback.errorCode && fallback.errorMessage && onError) {
+        onError(fallback.errorCode, fallback.errorMessage);
+      }
       onChunk(fallback.text);
       return fallback;
     }

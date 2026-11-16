@@ -16,6 +16,7 @@ const AiAssistant: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<{role: 'user' | 'model', content: string}[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [activeTool, setActiveTool] = useState<'chat' | 'crop_ml' | 'fertilizer_ml' | 'market' | 'health'>('chat');
+  const [serviceNotice, setServiceNotice] = useState<string | null>(null);
   const chatRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -360,6 +361,9 @@ const AiAssistant: React.FC = () => {
       if (typeof chatRef.current.sendMessageStream === 'function') {
         await chatRef.current.sendMessageStream({
           message: userMsg,
+          onError: (_code: string, msg: string) => {
+            setServiceNotice(msg);
+          },
           onChunk: (accumulated: string) => {
             if (!streamedStarted) {
               streamedStarted = true;
@@ -451,6 +455,13 @@ const AiAssistant: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {serviceNotice && (
+        <div className="mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-2xl flex items-center gap-3 text-amber-900">
+          <AlertTriangle size={20} className="shrink-0 text-amber-600" />
+          <p className="text-xs font-bold">{serviceNotice}</p>
+        </div>
+      )}
 
       <div className="min-h-[600px]">
         {activeTool === 'chat' && (

@@ -7,14 +7,92 @@ import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
+function getApiKey(): string | null {
+  const raw = (process.env.GEMINI_API_KEY || process.env.API_KEY || "").trim();
+  if (!raw) return null;
+  const lower = raw.toLowerCase();
+  if (
+    lower === "undefined" ||
+    lower === "null" ||
+    lower.includes("your_api_key") ||
+    lower.includes("my_gemini_api_key") ||
+    lower.includes("placeholder") ||
+    raw.length < 10
+  ) {
+    return null;
   }
-});
+  return raw;
+}
+
+let cachedKey: string | null = null;
+let cachedAI: GoogleGenAI | null = null;
+
+function getGeminiClient(): GoogleGenAI | null {
+  const key = getApiKey();
+  if (!key) return null;
+  if (!cachedAI || cachedKey !== key) {
+    cachedKey = key;
+    cachedAI = new GoogleGenAI({
+      apiKey: key,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+  }
+  return cachedAI;
+}
+
+interface GeminiErrorInfo {
+  code: 'API_KEY_INVALID' | 'PERMISSION_DENIED' | 'QUOTA_EXCEEDED' | 'MODEL_NOT_FOUND' | 'TIMEOUT' | 'UNKNOWN';
+  status: number;
+  userMessage: string;
+}
+
+function classifyGeminiError(err: any): GeminiErrorInfo {
+  const msg = String(err?.message || err || "");
+  if (msg.includes("API_KEY_INVALID") || msg.includes("API key not valid")) {
+    return {
+      code: "API_KEY_INVALID",
+      status: 400,
+      userMessage: "Gemini API key is invalid. Please check or update GEMINI_API_KEY in Settings > Secrets."
+    };
+  }
+  if (msg.includes("PERMISSION_DENIED") || err?.status === 403) {
+    return {
+      code: "PERMISSION_DENIED",
+      status: 403,
+      userMessage: "Gemini API access denied. Please verify GEMINI_API_KEY permissions in Settings > Secrets."
+    };
+  }
+  if (msg.includes("RESOURCE_EXHAUSTED") || msg.includes("429") || err?.status === 429) {
+    return {
+      code: "QUOTA_EXCEEDED",
+      status: 429,
+      userMessage: "Gemini API quota exceeded. Please try again in a minute or check Settings > Secrets."
+    };
+  }
+  if (msg.includes("NOT_FOUND") || err?.status === 404) {
+    return {
+      code: "MODEL_NOT_FOUND",
+      status: 404,
+      userMessage: "Requested Gemini model is unavailable."
+    };
+  }
+  if (msg.includes("timed out")) {
+    return {
+      code: "TIMEOUT",
+      status: 504,
+      userMessage: "Gemini API request timed out."
+    };
+  }
+  return {
+    code: "UNKNOWN",
+    status: 500,
+    userMessage: "Unable to reach Gemini service."
+  };
+}
 
 const FAST_MODEL = "gemini-4-hydrogen";
 
@@ -114,7 +192,10 @@ async function startServer() {
       { name: "तूर (Pigeon Pea)", price: 9200, minPrice: 8500, maxPrice: 9800, unit: "क्विंटल", location: "नागपूर (Nagpur)", change: "+80", trend: "up", lastUpdated: today, source: "live" }
     ];
 
-    if (process.env.GEMINI_API_KEY) {
+    const ai = getGeminiClient();
+    let apiError: GeminiErrorInfo | null = null;
+
+    if (ai) {
       try {
         const response = await withTimeout(ai.models.generateContent({
           model: FAST_MODEL,
@@ -153,11 +234,15 @@ async function startServer() {
           }
         }
       } catch (err: any) {
-        console.warn("Gemini market-rates API warning:", err.message);
+        apiError = classifyGeminiError(err);
       }
     }
 
-    res.json({ success: true, rates: fallbackRates });
+    res.json({
+      success: true,
+      rates: fallbackRates,
+      ...(apiError ? { errorCode: apiError.code, errorMessage: apiError.userMessage } : {})
+    });
   });
 
   // 2. Verified Mandi Price search
@@ -165,7 +250,10 @@ async function startServer() {
     const { crop = "कांदा", state = "Maharashtra", district = "Nashik" } = req.body || {};
     const today = new Date().toISOString().split("T")[0];
 
-    if (process.env.GEMINI_API_KEY) {
+    const ai = getGeminiClient();
+    let apiError: GeminiErrorInfo | null = null;
+
+    if (ai) {
       try {
         const response = await withTimeout(ai.models.generateContent({
           model: FAST_MODEL,
@@ -217,7 +305,7 @@ async function startServer() {
           }
         }
       } catch (err: any) {
-        console.warn("Verified mandi AI error:", err.message);
+        apiError = classifyGeminiError(err);
       }
     }
 
@@ -242,8 +330,10 @@ async function startServer() {
   // 3. Market Advice in Marathi
   app.post("/api/gemini/market-advice", async (req, res) => {
     const { productName = "कांदा", location = "महाराष्ट्र" } = req.body || {};
+    const ai = getGeminiClient();
+    let apiError: GeminiErrorInfo | null = null;
 
-    if (process.env.GEMINI_API_KEY) {
+    if (ai) {
       try {
         const response = await withTimeout(ai.models.generateContent({
           model: FAST_MODEL,
@@ -258,13 +348,14 @@ async function startServer() {
         const grounding = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
         return res.json({ text: response.text, grounding });
       } catch (err: any) {
-        console.warn("Market advice Gemini error:", err.message);
+        apiError = classifyGeminiError(err);
       }
     }
 
     res.json({
       text: `आजचे ${productName} चे बाजार भाव समाधानकारक आहेत. सरासरी दर ₹१,८५० ते ₹२,२५० प्रति क्विंटल दरम्यान असून दर्जेदार मालाला चांगला उठाव मिळत आहे. आगामी दिवसांत आवक वाढण्याची शक्यता आहे.`,
-      grounding: []
+      grounding: [],
+      ...(apiError ? { errorCode: apiError.code, errorMessage: apiError.userMessage } : {})
     });
   });
 
@@ -272,8 +363,10 @@ async function startServer() {
   app.post("/api/gemini/chat", async (req, res) => {
     const { message, history = [], systemInstruction } = req.body || {};
     const defaultSys = "तुम्ही 'बळीराजा' या अ‍ॅपचे कृषी तज्ज्ञ आहात. शेतकऱ्यांना पिके, खते, कीटकनाशके आणि बाजारभावाबाबत मराठीत थोडक्यात, स्पष्ट आणि उपयुक्त मदत करा.";
+    const ai = getGeminiClient();
+    let apiError: GeminiErrorInfo | null = null;
 
-    if (process.env.GEMINI_API_KEY && message) {
+    if (ai && message) {
       try {
         const contents: any[] = [];
         if (Array.isArray(history)) {
@@ -299,12 +392,19 @@ async function startServer() {
           return res.json({ text: response.text });
         }
       } catch (err: any) {
-        console.warn("Chat Gemini error:", err.message);
+        apiError = classifyGeminiError(err);
       }
+    } else if (!ai) {
+      apiError = {
+        code: "API_KEY_INVALID",
+        status: 400,
+        userMessage: "Gemini API key is missing or invalid. Please check GEMINI_API_KEY in Settings > Secrets."
+      };
     }
 
     res.json({
-      text: getContextualFallbackReply(message)
+      text: getContextualFallbackReply(message),
+      ...(apiError ? { errorCode: apiError.code, errorMessage: apiError.userMessage } : {})
     });
   });
 
@@ -322,7 +422,10 @@ async function startServer() {
       res.write(`data: ${JSON.stringify(payload)}\n\n`);
     };
 
-    if (process.env.GEMINI_API_KEY && message) {
+    const ai = getGeminiClient();
+    let apiError: GeminiErrorInfo | null = null;
+
+    if (ai && message) {
       try {
         const contents: any[] = [];
         if (Array.isArray(history)) {
@@ -358,10 +461,19 @@ async function startServer() {
         sendEvent({ done: true });
         return res.end();
       } catch (err: any) {
-        console.warn("Chat stream Gemini error:", err.message);
+        apiError = classifyGeminiError(err);
       }
+    } else if (!ai) {
+      apiError = {
+        code: "API_KEY_INVALID",
+        status: 400,
+        userMessage: "Gemini API key is missing or invalid. Please check GEMINI_API_KEY in Settings > Secrets."
+      };
     }
 
+    if (apiError) {
+      sendEvent({ errorCode: apiError.code, errorMessage: apiError.userMessage });
+    }
     sendEvent({ chunk: getContextualFallbackReply(message) });
     sendEvent({ done: true });
     return res.end();
@@ -370,8 +482,10 @@ async function startServer() {
   // 5. Crop Disease Image Analysis
   app.post("/api/gemini/analyze-crop", async (req, res) => {
     const { base64Image, mimeType = "image/jpeg" } = req.body || {};
+    const ai = getGeminiClient();
+    let apiError: GeminiErrorInfo | null = null;
 
-    if (process.env.GEMINI_API_KEY && base64Image) {
+    if (ai && base64Image) {
       try {
         const response = await withTimeout(ai.models.generateContent({
           model: FAST_MODEL,
@@ -388,20 +502,22 @@ async function startServer() {
 
         return res.json({ text: response.text });
       } catch (err: any) {
-        console.warn("Analyze crop Gemini error:", err.message);
+        apiError = classifyGeminiError(err);
       }
     }
 
     res.json({
-      text: "पिकाच्या पानांवर बुरशीजन्य करपा किंवा डाऊनी रोगाची लक्षणे दिसून येत आहेत. उपाय: मॅन्कोझेब २.५ ग्रॅम प्रति लिटर पाणी किंवा कॉपर ऑक्सिक्लोराईड ३ ग्रॅम प्रति लिटर पाण्यात मिसळून फवारावे."
+      text: "पिकाच्या पानांवर बुरशीजन्य करपा किंवा डाऊनी रोगाची लक्षणे दिसून येत आहेत. उपाय: मॅन्कोझेब २.५ ग्रॅम प्रति लिटर पाणी किंवा कॉपर ऑक्सिक्लोराईड ३ ग्रॅम प्रति लिटर पाण्यात मिसळून फवारावे.",
+      ...(apiError ? { errorCode: apiError.code, errorMessage: apiError.userMessage } : {})
     });
   });
 
   // 6. Crop Baseline Distribution
   app.post("/api/gemini/crop-baseline", async (req, res) => {
     const { prompt } = req.body || {};
+    const ai = getGeminiClient();
 
-    if (process.env.GEMINI_API_KEY && prompt) {
+    if (ai && prompt) {
       try {
         const response = await withTimeout(ai.models.generateContent({
           model: FAST_MODEL,
@@ -427,7 +543,7 @@ async function startServer() {
           return res.json({ success: true, data: JSON.parse(response.text) });
         }
       } catch (err: any) {
-        console.warn("Crop baseline Gemini error:", err.message);
+        classifyGeminiError(err);
       }
     }
 
@@ -446,8 +562,9 @@ async function startServer() {
   // 7. Crop Advisory
   app.post("/api/gemini/crop-advisory", async (req, res) => {
     const { prompt } = req.body || {};
+    const ai = getGeminiClient();
 
-    if (process.env.GEMINI_API_KEY && prompt) {
+    if (ai && prompt) {
       try {
         const response = await withTimeout(ai.models.generateContent({
           model: FAST_MODEL,
@@ -482,7 +599,7 @@ async function startServer() {
           return res.json({ success: true, data: JSON.parse(response.text) });
         }
       } catch (err: any) {
-        console.warn("Crop advisory Gemini error:", err.message);
+        classifyGeminiError(err);
       }
     }
 
@@ -503,8 +620,9 @@ async function startServer() {
   // 8. Text to Speech (TTS)
   app.post("/api/gemini/tts", async (req, res) => {
     const { text } = req.body || {};
+    const ai = getGeminiClient();
 
-    if (process.env.GEMINI_API_KEY && text) {
+    if (ai && text) {
       try {
         const response = await ai.models.generateContent({
           model: "gemini-3.8-flash-lite-tts",
@@ -524,7 +642,7 @@ async function startServer() {
           return res.json({ audioBase64 });
         }
       } catch (err: any) {
-        console.warn("TTS Gemini error:", err.message);
+        classifyGeminiError(err);
       }
     }
 
