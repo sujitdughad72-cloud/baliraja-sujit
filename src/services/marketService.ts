@@ -2,9 +2,6 @@
 
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, setDoc, doc, limit } from 'firebase/firestore';
-import { GoogleGenAI, Type } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 export interface MarketRate {
   name: string;
@@ -68,7 +65,6 @@ export const fetchRealTimeMarketRates = async (forceRefresh: boolean = false): P
       const isToday = rates.every(r => r.lastUpdated === todayStr);
 
       if (isRecent && isToday && rates.length >= 5) {
-        console.log("Using cached market rates");
         return rates.map(r => ({ ...r, source: 'cached' }));
       }
     } catch (e) {
@@ -78,58 +74,17 @@ export const fetchRealTimeMarketRates = async (forceRefresh: boolean = false): P
 
   let allRates: MarketRate[] = [];
 
-  // 1. Try AI-powered Search
+  // 1. Fetch from Server-Side Gemini API (Proxy with Search Grounding & fallbacks)
   try {
-    const today = new Date().toISOString().split('T')[0];
-    const response = await ai.models.generateContent({
-      model: "gemini-flash-latest",
-      contents: `Get the most accurate and latest Mandi market rates (MODAL PRICE) for major crops in Maharashtra. 
-      Focus on these specific high-volume markets:
-      - Onion: Lasalgaon, Pimpalgaon, or Yeola
-      - Soybean: Latur, Amravati, or Washim
-      - Cotton: Akola, Yavatmal, or Jalgaon
-      - Wheat: Pune, Nagpur, or Solapur
-      - Tomato: Narayangaon, Nashik, or Junnar
-      - Potato: Pune, Mumbai, or Manchar
-      
-      Use official sources like MSAMB (msamb.com), Agmarknet, or direct APMC bulletins. 
-      Provide the data in structured JSON for TODAY (${today}). 
-      It is CRITICAL that you search for data updated in the LAST 24 HOURS. 
-      If today's data isn't out, use the latest from April 2026. 
-      Return at least 10 different crop/location pairs. 
-      Ensure 'price' is the MODAL price per Quintal.`,
-      config: {
-        tools: [{ googleSearch: {} }],
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              name: { type: Type.STRING },
-              price: { type: Type.NUMBER },
-              minPrice: { type: Type.NUMBER },
-              maxPrice: { type: Type.NUMBER },
-              unit: { type: Type.STRING },
-              location: { type: Type.STRING },
-              change: { type: Type.STRING },
-              trend: { type: Type.STRING, enum: ["up", "down", "stable"] },
-              lastUpdated: { type: Type.STRING }
-            },
-            required: ["name", "price", "unit", "location", "lastUpdated"]
-          }
-        }
-      }
-    });
-
-    if (response.text) {
-      const aiRates = JSON.parse(response.text);
-      if (Array.isArray(aiRates) && aiRates.length > 0) {
-        allRates = [...aiRates.map(r => ({ ...r, source: 'ai_search' as const }))];
+    const res = await fetch('/api/gemini/market-rates');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.rates && Array.isArray(data.rates) && data.rates.length > 0) {
+        allRates = data.rates;
       }
     }
   } catch (error) {
-    console.error("AI Search failed:", error);
+    console.error("Market rates server fetch error:", error);
   }
 
   // 2. Supplement with Database if needed
@@ -296,74 +251,29 @@ export const fetchDirectGovApiMandiPrices = async (crop: string, state: string, 
     console.warn("Direct Gov API failed or timed out, falling back to AI Search:", error);
   }
 
-  // 2. Fallback to AI-powered Search (Google Search Grounding)
+  // 2. Fallback to Server-Side AI Search (Google Search Grounding)
   try {
-    const today = new Date().toISOString().split('T')[0];
-    console.log(`Fetching verified mandi prices for ${crop} in ${district}, ${state} via AI Search for ${today}...`);
-    const response = await ai.models.generateContent({
-      model: "gemini-flash-latest",
-      contents: `Find the most accurate and latest official Mandi (APMC) market rates for ${crop} in ${district}, ${state}. 
-      Use official sources like MSAMB (msamb.com), Agmarknet (agmarknet.gov.in), or Maharashtra State Agricultural Marketing Board. 
-      Provide the data for the top 5 markets in this district. 
-      It is CRITICAL that you provide the MODAL PRICE for TODAY (${today}) or the most recent available date. 
-      If you cannot find data for ${today}, look for the latest possible date in April 2026. 
-      DO NOT return data from March 2026 if newer data exists. 
-      Ensure the modal price is accurate and reflects the current market trend.`,
-      config: {
-        tools: [{ googleSearch: {} }],
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            crop: { type: Type.STRING },
-            state: { type: Type.STRING },
-            district: { type: Type.STRING },
-            date: { type: Type.STRING },
-            mandis: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  market_name: { type: Type.STRING },
-                  modal_price: { type: Type.NUMBER },
-                  min_price: { type: Type.NUMBER },
-                  max_price: { type: Type.NUMBER },
-                  arrival_date: { type: Type.STRING },
-                  source: { type: Type.STRING },
-                  is_verified: { type: Type.BOOLEAN }
-                },
-                required: ["market_name", "modal_price", "min_price", "max_price", "arrival_date"]
-              }
-            }
-          },
-          required: ["crop", "state", "district", "mandis"]
-        }
-      }
+    const res = await fetch('/api/gemini/verified-mandi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ crop, state, district })
     });
 
-    if (response.text) {
-      const mandiData = JSON.parse(response.text) as MandiData;
-      if (mandiData.mandis && mandiData.mandis.length > 0) {
-        // Ensure source and verification are set
-        mandiData.mandis = mandiData.mandis.map(m => ({
-          ...m,
-          source: m.source || "AI Search (Google Grounding)",
-          is_verified: true
-        }));
-        
-        await storeVerifiedData(mandiData);
-
+    if (res.ok) {
+      const resp = await res.json();
+      if (resp.data && resp.data.mandis && resp.data.mandis.length > 0) {
+        await storeVerifiedData(resp.data);
         return {
           action: "store_and_use",
           source: "api",
           verified: true,
-          data: mandiData,
+          data: resp.data,
           status: "success"
         };
       }
     }
   } catch (error: any) {
-    console.error("AI Search verified mandi fetch failed:", error);
+    console.error("Server verified mandi fetch failed:", error);
   }
 
   // Fallback to Database

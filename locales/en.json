@@ -178,6 +178,50 @@
       "health": "Health"
     }
   },
+  "ai": {
+    "title": "BaliRaja AI Krishi Mitra",
+    "status": "Online • Fast Smart Agri Assistant",
+    "prompts": {
+      "weather": "Today's weather & crop advisory",
+      "weather_sub": "Weather Forecast",
+      "crop_advice": "Best crops & care for this season",
+      "crop_advice_sub": "Crop Guidance",
+      "fertilizer": "Balanced fertilizer schedule",
+      "fertilizer_sub": "Fertilizer Plan",
+      "market_rates": "Today's Onion & Soybean Mandi rates",
+      "market_rates_sub": "Live Market Rates"
+    },
+    "chat": {
+      "welcome": "Namaskar! How can I help your farm today?",
+      "subtitle": "Ask about crops, weather, fertilizers, pest control, or mandi rates.",
+      "listen": "Listen to answer",
+      "thinking": "Thinking...",
+      "send_photo": "Upload crop photo",
+      "input_placeholder": "Ask your farming question...",
+      "voice_input": "Speak your question"
+    },
+    "market": {
+      "title": "Live APMC Market Rate Check",
+      "subtitle": "Check today's mandi prices across Maharashtra",
+      "input_placeholder": "Enter crop & market (e.g. Onion Lasalgaon)",
+      "check_rates": "Check Rates"
+    },
+    "health": {
+      "title": "AI Crop Doctor",
+      "subtitle": "Upload a leaf or crop photo to detect pests, diseases, and get remedies.",
+      "start_camera": "Upload Crop Photo",
+      "photo_hint": "Supported formats: JPG, PNG • Clear daylight photo works best"
+    },
+    "errors": {
+      "market_info": "Could not fetch market rates. Please try again.",
+      "chat_init": "Failed to initialize chat. Please try again.",
+      "generic": "Unable to respond right now. Please try again.",
+      "no_info": "No analysis returned for this photo.",
+      "vision_error": "Error analyzing crop photo.",
+      "api_key_missing_title": "AI Service Configuration",
+      "api_key_missing_desc": "AI service is temporarily unavailable."
+    }
+  },
   "user_profile": {
     "title": "My Profile",
     "my_info": "My Information",

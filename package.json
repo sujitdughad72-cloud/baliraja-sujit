@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
+    "start": "node server.ts",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@google/genai": "^1.35.0",
+    "@google/genai": "^3.3.0",
     "@tailwindcss/vite": "^4.2.1",
     "express": "^5.2.1",
     "firebase": "^12.10.0",

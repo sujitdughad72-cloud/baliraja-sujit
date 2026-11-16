@@ -16,7 +16,6 @@ const AiAssistant: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<{role: 'user' | 'model', content: string}[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [activeTool, setActiveTool] = useState<'chat' | 'crop_ml' | 'fertilizer_ml' | 'market' | 'health'>('chat');
-  const [apiKeyMissing, setApiKeyMissing] = useState(false);
   const chatRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -89,15 +88,10 @@ const AiAssistant: React.FC = () => {
   };
 
   useEffect(() => {
-    const key = process.env.GEMINI_API_KEY || process.env.API_KEY;
-    if (!key || key === 'undefined' || key === 'null') {
-      setApiKeyMissing(true);
-    } else {
-      try {
-        chatRef.current = startAgriChat();
-      } catch (err) {
-        console.error("Chat init error:", err);
-      }
+    try {
+      chatRef.current = startAgriChat();
+    } catch (err) {
+      console.error("Chat init error:", err);
     }
   }, []);
 
@@ -325,12 +319,6 @@ const AiAssistant: React.FC = () => {
 
   const handleMarketRates = async () => {
     if (!query) return;
-    
-    const key = process.env.GEMINI_API_KEY || process.env.API_KEY;
-    if (!key) {
-      setApiKeyMissing(true);
-      return;
-    }
 
     setLoading(true);
     setMarketResult(null);
@@ -345,16 +333,9 @@ const AiAssistant: React.FC = () => {
     }
   };
 
-  const handleChat = async () => {
-    if (!chatInput) return;
-    
-    // Check for API key again
-    const key = process.env.GEMINI_API_KEY || process.env.API_KEY;
-    if (!key || key === 'undefined' || key === 'null') {
-      setApiKeyMissing(true);
-      setChatMessages(prev => [...prev, { role: 'model', content: t('ai.errors.api_key_missing_chat') }]);
-      return;
-    }
+  const handleChat = async (overrideMsg?: string) => {
+    const userMsg = (overrideMsg ?? chatInput).trim();
+    if (!userMsg || loading) return;
 
     if (!chatRef.current) {
       try {
@@ -362,31 +343,53 @@ const AiAssistant: React.FC = () => {
       } catch (err) {
         console.error("Chat re-init error:", err);
       }
-      
+
       if (!chatRef.current) {
         setChatMessages(prev => [...prev, { role: 'model', content: t('ai.errors.chat_init') }]);
         return;
       }
     }
-    const userMsg = chatInput;
+
     setChatMessages(prev => [...prev, { role: 'user', content: userMsg }]);
-    setChatInput('');
+    if (!overrideMsg) setChatInput('');
     setLoading(true);
-    
+
+    let streamedStarted = false;
+
     try {
-      const result = await chatRef.current.sendMessage({ message: userMsg });
-      if (result && result.text) {
-        setChatMessages(prev => [...prev, { role: 'model', content: result.text }]);
+      if (typeof chatRef.current.sendMessageStream === 'function') {
+        await chatRef.current.sendMessageStream({
+          message: userMsg,
+          onChunk: (accumulated: string) => {
+            if (!streamedStarted) {
+              streamedStarted = true;
+              setChatMessages(prev => [...prev, { role: 'model', content: accumulated }]);
+            } else {
+              setChatMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { role: 'model', content: accumulated };
+                return updated;
+              });
+            }
+          }
+        });
       } else {
-        throw new Error("Empty response from AI");
+        const result = await chatRef.current.sendMessage({ message: userMsg });
+        if (result && result.text) {
+          setChatMessages(prev => [...prev, { role: 'model', content: result.text }]);
+        } else {
+          throw new Error("Empty response from AI");
+        }
       }
     } catch (error: any) {
       console.error("Chat error:", error);
       const isQuotaError = error?.message?.includes('429') || error?.status === 'RESOURCE_EXHAUSTED';
-      const errorMsg = isQuotaError 
+      const errorMsg = isQuotaError
         ? "एआय सेवा सध्या व्यस्त आहे (Quota Exceeded). कृपया १ मिनिटानंतर पुन्हा प्रयत्न करा."
         : t('ai.errors.generic');
-      setChatMessages(prev => [...prev, { role: 'model', content: errorMsg }]);
+      if (!streamedStarted) {
+        setChatMessages(prev => [...prev, { role: 'model', content: errorMsg }]);
+      }
     } finally {
       setLoading(false);
     }
@@ -395,12 +398,6 @@ const AiAssistant: React.FC = () => {
   const handleVision = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const key = process.env.GEMINI_API_KEY || process.env.API_KEY;
-    if (!key) {
-      setApiKeyMissing(true);
-      return;
-    }
 
     setLoading(true);
     const reader = new FileReader();
@@ -455,16 +452,6 @@ const AiAssistant: React.FC = () => {
         </div>
       </div>
 
-      {apiKeyMissing && (
-        <div className="mb-8 p-4 bg-red-50 border-2 border-red-100 rounded-2xl flex items-center gap-4 text-red-800">
-          <AlertTriangle size={20} />
-          <div>
-            <p className="font-black text-sm">{t('ai.errors.api_key_missing_title')}</p>
-            <p className="text-xs font-bold opacity-80">{t('ai.errors.api_key_missing_desc')}</p>
-          </div>
-        </div>
-      )}
-
       <div className="min-h-[600px]">
         {activeTool === 'chat' && (
           <div className="bg-white rounded-3xl border-2 border-slate-50 shadow-sm flex flex-col h-[600px] overflow-hidden">
@@ -483,7 +470,7 @@ const AiAssistant: React.FC = () => {
                     {quickPrompts.map((p, idx) => (
                       <button 
                         key={idx}
-                        onClick={() => setChatInput(p.label)}
+                        onClick={() => handleChat(p.label)}
                         className="p-4 bg-white border-2 border-slate-50 rounded-2xl text-left hover:border-paithani-emerald transition-all"
                       >
                         <span className="text-xl mb-2 block">{p.icon}</span>
@@ -553,7 +540,7 @@ const AiAssistant: React.FC = () => {
                   <Mic size={20} />
                 </button>
                 <button 
-                  onClick={handleChat}
+                  onClick={() => handleChat()}
                   disabled={!chatInput || loading}
                   className="p-3 bg-paithani-emerald text-white rounded-xl shadow-lg hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all"
                 >

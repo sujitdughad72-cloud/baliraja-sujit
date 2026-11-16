@@ -1,14 +1,7 @@
 import { collection, getDocs, query, where, orderBy, limit, Timestamp, addDoc, getDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Product, FarmerPlan, CropInsight, AIAdvisory } from '../types';
-import { GoogleGenAI, Type } from "@google/genai";
 import { REGIONAL_STATUS, RABI_CROP_DISTRIBUTION, SUMMER_CROP_DISTRIBUTION, OFFICIAL_REPORT_DATE } from '../src/constants/officialCropReport';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-
-if (!process.env.GEMINI_API_KEY) {
-  console.warn("GEMINI_API_KEY is missing. AI features will be disabled.");
-}
 
 interface OfficialReportData {
   reportDate: string;
@@ -150,35 +143,19 @@ export const getCropDistribution = async (region: string): Promise<CropInsight[]
   The sum MUST be 100. Use the official crop names provided.`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-flash-latest",
-      contents: baselinePrompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              cropName: { type: Type.STRING },
-              percentage: { type: Type.NUMBER }
-            },
-            required: ["cropName", "percentage"]
-          }
-        }
-      }
+    const res = await fetch('/api/gemini/crop-baseline', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: baselinePrompt })
     });
-    const aiBaseline = JSON.parse(response.text);
-    if (aiBaseline && aiBaseline.length > 0) {
-      baseline = aiBaseline;
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data && Array.isArray(json.data) && json.data.length > 0) {
+        baseline = json.data;
+      }
     }
   } catch (err: any) {
-    const isQuotaError = err?.message?.includes('429') || err?.status === 'RESOURCE_EXHAUSTED';
-    if (isQuotaError) {
-      console.warn("Gemini API quota exceeded for baseline distribution. Using official baseline.");
-    } else {
-      console.error("Failed to fetch baseline distribution:", err);
-    }
+    console.warn("Failed to fetch baseline distribution from server:", err);
     // Use the pre-calculated baseline if AI fails
   }
 
@@ -273,47 +250,27 @@ export const getAIAdvisory = async (
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-flash-latest",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            riskExplanation: { type: Type.STRING },
-            alternativeCrops: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING },
-                  benefit: { type: Type.STRING },
-                  demandGap: { type: Type.STRING }
-                },
-                required: ["name", "benefit", "demandGap"]
-              }
-            },
-            marathiAdvice: { type: Type.STRING }
-          },
-          required: ["riskExplanation", "alternativeCrops", "marathiAdvice"]
-        }
-      }
+    const res = await fetch('/api/gemini/crop-advisory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
     });
-
-    return JSON.parse(response.text);
-  } catch (err: any) {
-    const isQuotaError = err?.message?.includes('429') || err?.status === 'RESOURCE_EXHAUSTED';
-    if (isQuotaError) {
-      return {
-        riskExplanation: "AI service is currently busy. Based on current trends, this crop has moderate risk.",
-        marathiAdvice: "एआय सेवा सध्या व्यस्त आहे. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा. (AI service is busy, please try again later.)",
-        alternativeCrops: [
-          { name: "Maize (मका)", benefit: "Stable demand", demandGap: "Moderate" },
-          { name: "Gram (हरभरा)", benefit: "Low water requirement", demandGap: "High" }
-        ]
-      };
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) {
+        return json.data;
+      }
     }
-    throw err;
+    throw new Error("Advisory response invalid");
+  } catch (err: any) {
+    console.warn("Advisory fetch failed, returning fallback advice:", err);
+    return {
+      riskExplanation: "सध्याच्या बाजारभाव व आवकेनुसार या पिकाला मध्यम ते उच्च स्पर्धा असू शकते.",
+      marathiAdvice: "पिकाचे नियोजन करताना स्थानिक बाजारभाव व आवक तपासावी. संतुलित खत व पाण्याचे व्यवस्थापन ठेवावे.",
+      alternativeCrops: [
+        { name: "Maize (मका)", benefit: "स्थिर बाजार मागणी व हमीभाव", demandGap: "मध्यम" },
+        { name: "Gram (हरभरा)", benefit: "कमी पाण्यामध्ये उत्तम उत्पन्न", demandGap: "उच्च" }
+      ]
+    };
   }
 };
