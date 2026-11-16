@@ -3,7 +3,7 @@ import express from "express";
 import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 
 function getApiKey(): string | null {
-  const raw = (process.env.GEMINI_API_KEY || process.env.API_KEY || "").trim();
+  const raw = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.API_KEY || "").trim();
   if (!raw) return null;
   const lower = raw.toLowerCase();
   if (
@@ -40,58 +40,139 @@ function getGeminiClient(): GoogleGenAI | null {
 }
 
 interface GeminiErrorInfo {
-  code: 'API_KEY_INVALID' | 'PERMISSION_DENIED' | 'QUOTA_EXCEEDED' | 'MODEL_NOT_FOUND' | 'TIMEOUT' | 'UNKNOWN';
+  code:
+    | 'API_KEY_INVALID'
+    | 'PERMISSION_DENIED'
+    | 'QUOTA_EXCEEDED'
+    | 'SERVICE_OVERLOADED'
+    | 'MODEL_NOT_FOUND'
+    | 'INVALID_ARGUMENT'
+    | 'TIMEOUT'
+    | 'NETWORK_ERROR'
+    | 'UNKNOWN';
   status: number;
   userMessage: string;
+  retryable?: boolean;
+}
+
+function extractErrorDetails(err: any): { status: number; message: string; rpcStatus: string } {
+  let rawMsg = String(err?.message || err || "");
+  let status = Number(err?.status || err?.code || 0);
+  let rpcStatus = String(err?.statusText || "");
+
+  try {
+    const jsonStart = rawMsg.indexOf("{");
+    if (jsonStart !== -1) {
+      const parsed = JSON.parse(rawMsg.slice(jsonStart));
+      const inner = parsed?.error || parsed;
+      if (inner?.message) rawMsg = String(inner.message);
+      if (inner?.code && !status) status = Number(inner.code);
+      if (inner?.status) rpcStatus = String(inner.status);
+    }
+  } catch {
+    // Keep rawMsg as-is when not JSON
+  }
+
+  const causeCode = err?.cause?.code ? ` (${err.cause.code})` : "";
+  return {
+    status,
+    message: `${rawMsg}${causeCode}`.trim(),
+    rpcStatus,
+  };
 }
 
 function classifyGeminiError(err: any): GeminiErrorInfo {
-  const msg = String(err?.message || err || "");
-  if (msg.includes("API_KEY_INVALID") || msg.includes("API key not valid")) {
+  const { status, message, rpcStatus } = extractErrorDetails(err);
+  const combined = `${rpcStatus} ${message}`.toUpperCase();
+
+  console.error("[Gemini API Error]", { status, rpcStatus, message: message.slice(0, 300) });
+
+  if (
+    combined.includes("API_KEY_INVALID") ||
+    combined.includes("API KEY NOT VALID") ||
+    combined.includes("API KEY EXPIRED")
+  ) {
     return {
       code: "API_KEY_INVALID",
       status: 400,
-      userMessage: "Gemini API key is invalid. Please check or update GEMINI_API_KEY in Settings > Secrets."
+      userMessage: "Gemini API key is invalid or expired. Please check or update GEMINI_API_KEY in Settings > Secrets."
     };
   }
-  if (msg.includes("PERMISSION_DENIED") || err?.status === 403) {
+  if (combined.includes("PERMISSION_DENIED") || combined.includes("PROXY_GENERATION_DISABLED") || status === 403) {
     return {
       code: "PERMISSION_DENIED",
       status: 403,
       userMessage: "Gemini API access denied. Please verify GEMINI_API_KEY permissions in Settings > Secrets."
     };
   }
-  if (msg.includes("RESOURCE_EXHAUSTED") || msg.includes("429") || err?.status === 429) {
+  if (combined.includes("RESOURCE_EXHAUSTED") || status === 429) {
     return {
       code: "QUOTA_EXCEEDED",
       status: 429,
+      retryable: true,
       userMessage: "Gemini API quota exceeded. Please try again in a minute or check Settings > Secrets."
     };
   }
-  if (msg.includes("NOT_FOUND") || err?.status === 404) {
+  if (combined.includes("NOT_FOUND") || status === 404) {
     return {
       code: "MODEL_NOT_FOUND",
       status: 404,
       userMessage: "Requested Gemini model is unavailable."
     };
   }
-  if (msg.includes("timed out")) {
+  if (
+    combined.includes("UNAVAILABLE") ||
+    combined.includes("OVERLOADED") ||
+    combined.includes("INTERNAL") ||
+    status === 503 ||
+    status === 500
+  ) {
+    return {
+      code: "SERVICE_OVERLOADED",
+      status: 503,
+      retryable: true,
+      userMessage: "Gemini AI server is temporarily busy. Please try again in a few seconds."
+    };
+  }
+  if (combined.includes("TIMED OUT") || combined.includes("ETIMEDOUT") || combined.includes("ABORTERROR")) {
     return {
       code: "TIMEOUT",
       status: 504,
-      userMessage: "Gemini API request timed out."
+      retryable: true,
+      userMessage: "Gemini API request timed out. Please try again."
+    };
+  }
+  if (
+    combined.includes("FETCH FAILED") ||
+    combined.includes("ENOTFOUND") ||
+    combined.includes("ECONNREFUSED") ||
+    combined.includes("ECONNRESET") ||
+    combined.includes("UND_ERR")
+  ) {
+    return {
+      code: "NETWORK_ERROR",
+      status: 502,
+      retryable: true,
+      userMessage: `Network error connecting to Gemini API: ${message || "Connection interrupted"}`
+    };
+  }
+  if (combined.includes("INVALID_ARGUMENT") || status === 400) {
+    return {
+      code: "INVALID_ARGUMENT",
+      status: 400,
+      userMessage: message || "Invalid request parameters sent to Gemini API."
     };
   }
   return {
     code: "UNKNOWN",
-    status: 500,
-    userMessage: "Unable to reach Gemini service."
+    status: status >= 400 && status < 600 ? status : 500,
+    userMessage: message ? `Gemini error: ${message.slice(0, 180)}` : "Unable to reach Gemini service."
   };
 }
 
 const FAST_MODEL = "gemini-4-hydrogen";
 
-function withTimeout<T>(promise: Promise<T>, ms: number = 12000): Promise<T> {
+function withTimeout<T>(promise: Promise<T>, ms: number = 15000): Promise<T> {
   return Promise.race([
     promise,
     new Promise<T>((_, reject) =>
@@ -100,12 +181,48 @@ function withTimeout<T>(promise: Promise<T>, ms: number = 12000): Promise<T> {
   ]);
 }
 
+async function withRetry<T>(fn: () => Promise<T>, maxRetries: number = 1): Promise<T> {
+  let lastErr: any;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      lastErr = err;
+      const info = classifyGeminiError(err);
+      if (!info.retryable || attempt === maxRetries) {
+        throw err;
+      }
+      await new Promise((r) => setTimeout(r, 700 * (attempt + 1)));
+    }
+  }
+  throw lastErr;
+}
+
+function buildChatContents(history: any, message: string) {
+  const contents: any[] = [];
+  if (Array.isArray(history)) {
+    for (const h of history.slice(-8)) {
+      const txt = String(h?.text || h?.content || "").trim();
+      if (!txt || txt.startsWith("⚠️")) continue;
+      contents.push({
+        role: h?.role === 'model' ? 'model' : 'user',
+        parts: [{ text: txt }]
+      });
+    }
+  }
+  contents.push({ role: 'user', parts: [{ text: String(message).trim() }] });
+  return contents;
+}
+
 function formatApiErrorNotice(apiError: GeminiErrorInfo): string {
   if (apiError.code === "API_KEY_INVALID" || apiError.code === "PERMISSION_DENIED") {
     return "⚠️ **AI सेवा सुरू नाही (Invalid/Missing API Key):**\nकृपया **Settings > Secrets** (किंवा Vercel Environment Variables) मध्ये वैध `GEMINI_API_KEY` तपासा किंवा निवडा.\n*(Gemini API key is missing or invalid. Please check or select a valid key in Settings > Secrets.)*";
   }
   if (apiError.code === "QUOTA_EXCEEDED") {
     return "⚠️ **AI सेवा मर्यादा पूर्ण (Quota Exceeded):**\nकृपया १ मिनिटानंतर पुन्हा प्रयत्न करा किंवा **Settings > Secrets** मध्ये की तपासा.";
+  }
+  if (apiError.code === "SERVICE_OVERLOADED") {
+    return "⚠️ **AI सर्व्हर तात्पुरता व्यस्त आहे:** कृपया काही सेकंदांनी पुन्हा प्रयत्न करा.";
   }
   return `⚠️ **AI सेवा तात्पुरती उपलब्ध नाही:** ${apiError.userMessage}`;
 }
@@ -333,12 +450,28 @@ export function registerApiRoutes(app: Express) {
             tools: [{ googleSearch: {} }],
             thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
           }
-        }), 12000);
+        }), 6500);
 
         const grounding = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
         return res.json({ text: response.text, grounding });
       } catch (err: any) {
         apiError = classifyGeminiError(err);
+        if (apiError.code !== "API_KEY_INVALID" && apiError.code !== "PERMISSION_DENIED") {
+          try {
+            const fallbackResponse = await withTimeout(ai.models.generateContent({
+              model: FAST_MODEL,
+              contents: `${location} मधील ${productName} पिकासाठी सामान्य APMC बाजारभाव श्रेणी, विक्रीची योग्य वेळ आणि प्रतवारीबाबत शेतकऱ्यांसाठी मराठीत सल्ला द्या.`,
+              config: {
+                thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
+              }
+            }), 10000);
+            if (fallbackResponse.text) {
+              return res.json({ text: fallbackResponse.text, grounding: [] });
+            }
+          } catch (innerErr: any) {
+            apiError = classifyGeminiError(innerErr);
+          }
+        }
       }
     }
 
@@ -358,25 +491,16 @@ export function registerApiRoutes(app: Express) {
 
     if (ai && message) {
       try {
-        const contents: any[] = [];
-        if (Array.isArray(history)) {
-          history.slice(-8).forEach((h: any) => {
-            contents.push({
-              role: h.role === 'model' ? 'model' : 'user',
-              parts: [{ text: h.text || h.content || '' }]
-            });
-          });
-        }
-        contents.push({ role: 'user', parts: [{ text: message }] });
+        const contents = buildChatContents(history, message);
 
-        const response = await withTimeout(ai.models.generateContent({
+        const response = await withRetry(() => withTimeout(ai.models.generateContent({
           model: FAST_MODEL,
           contents,
           config: {
             systemInstruction: systemInstruction || defaultSys,
             thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
           }
-        }), 12000);
+        }), 15000), 1);
 
         if (response.text) {
           return res.json({ text: response.text });
@@ -423,28 +547,19 @@ export function registerApiRoutes(app: Express) {
     let apiError: GeminiErrorInfo | null = null;
 
     if (ai && message) {
-      try {
-        const contents: any[] = [];
-        if (Array.isArray(history)) {
-          history.slice(-8).forEach((h: any) => {
-            contents.push({
-              role: h.role === 'model' ? 'model' : 'user',
-              parts: [{ text: h.text || h.content || '' }]
-            });
-          });
-        }
-        contents.push({ role: 'user', parts: [{ text: message }] });
+      const contents = buildChatContents(history, message);
+      let sentAny = false;
 
-        const streamResponse = await withTimeout(ai.models.generateContentStream({
+      try {
+        const streamResponse = await withRetry(() => withTimeout(ai.models.generateContentStream({
           model: FAST_MODEL,
           contents,
           config: {
             systemInstruction: systemInstruction || defaultSys,
             thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
           }
-        }), 10000);
+        }), 15000), 1);
 
-        let sentAny = false;
         for await (const chunk of streamResponse) {
           if (chunk.text) {
             sentAny = true;
@@ -452,13 +567,36 @@ export function registerApiRoutes(app: Express) {
           }
         }
 
-        if (!sentAny) {
-          sendEvent({ chunk: "क्षमस्व, या प्रश्नाचे उत्तर तयार झाले नाही. कृपया पुन्हा विचारा." });
+        if (sentAny) {
+          sendEvent({ done: true });
+          return res.end();
         }
-        sendEvent({ done: true });
-        return res.end();
       } catch (err: any) {
         apiError = classifyGeminiError(err);
+      }
+
+      // If streaming failed before emitting text, attempt a non-streaming fallback once
+      if (!sentAny && (!apiError || apiError.retryable)) {
+        try {
+          const fallbackRes = await withTimeout(ai.models.generateContent({
+            model: FAST_MODEL,
+            contents,
+            config: {
+              systemInstruction: systemInstruction || defaultSys,
+              thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
+            }
+          }), 15000);
+          if (fallbackRes.text) {
+            sendEvent({ chunk: fallbackRes.text });
+            sendEvent({ done: true });
+            return res.end();
+          }
+        } catch (fallbackErr: any) {
+          apiError = classifyGeminiError(fallbackErr);
+        }
+      } else if (sentAny) {
+        sendEvent({ done: true });
+        return res.end();
       }
     } else if (!ai) {
       apiError = {

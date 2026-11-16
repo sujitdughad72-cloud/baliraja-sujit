@@ -42,7 +42,7 @@ export const startAgriChat = (
   const sendMessage = async ({ message }: { message: string }): Promise<{ text: string; errorCode?: string; errorMessage?: string }> => {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 14000);
+      const timeoutId = setTimeout(() => controller.abort(), 25000);
 
       const res = await fetch("/api/gemini/chat", {
         method: "POST",
@@ -93,7 +93,7 @@ export const startAgriChat = (
     onError?: (errorCode: string, errorMessage: string) => void;
   }): Promise<{ text: string; errorCode?: string; errorMessage?: string }> => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
     try {
       const res = await fetch("/api/gemini/chat/stream", {
@@ -161,8 +161,10 @@ export const startAgriChat = (
         return fallback;
       }
 
-      history.push({ role: 'user', text: message });
-      history.push({ role: 'model', text: fullText });
+      if (!detectedErrorCode && !fullText.startsWith("⚠️")) {
+        history.push({ role: 'user', text: message });
+        history.push({ role: 'model', text: fullText });
+      }
       return {
         text: fullText,
         errorCode: detectedErrorCode,
