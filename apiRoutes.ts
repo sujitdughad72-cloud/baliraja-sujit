@@ -138,7 +138,7 @@ function classifyGeminiError(err: any): GeminiErrorInfo {
     return {
       code: "TIMEOUT",
       status: 504,
-      retryable: true,
+      retryable: false,
       userMessage: "Gemini API request timed out. Please try again."
     };
   }
@@ -171,6 +171,7 @@ function classifyGeminiError(err: any): GeminiErrorInfo {
 }
 
 const FAST_MODEL = "gemini-4-hydrogen";
+const LITE_MODEL = "gemini-3.1-flash-lite";
 
 function withTimeout<T>(promise: Promise<T>, ms: number = 15000): Promise<T> {
   return Promise.race([
@@ -490,23 +491,39 @@ export function registerApiRoutes(app: Express) {
     let apiError: GeminiErrorInfo | null = null;
 
     if (ai && message) {
+      const contents = buildChatContents(history, message);
       try {
-        const contents = buildChatContents(history, message);
-
-        const response = await withRetry(() => withTimeout(ai.models.generateContent({
+        const response = await withTimeout(ai.models.generateContent({
           model: FAST_MODEL,
           contents,
           config: {
             systemInstruction: systemInstruction || defaultSys,
             thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
           }
-        }), 15000), 1);
+        }), 9000);
 
         if (response.text) {
           return res.json({ text: response.text });
         }
       } catch (err: any) {
         apiError = classifyGeminiError(err);
+        if (apiError.code === "TIMEOUT" || apiError.code === "SERVICE_OVERLOADED" || apiError.code === "QUOTA_EXCEEDED") {
+          try {
+            const liteResponse = await withTimeout(ai.models.generateContent({
+              model: LITE_MODEL,
+              contents,
+              config: {
+                systemInstruction: systemInstruction || defaultSys,
+                thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL }
+              }
+            }), 8000);
+            if (liteResponse.text) {
+              return res.json({ text: liteResponse.text });
+            }
+          } catch (liteErr: any) {
+            apiError = classifyGeminiError(liteErr);
+          }
+        }
       }
     } else if (!ai) {
       apiError = {
@@ -551,17 +568,21 @@ export function registerApiRoutes(app: Express) {
       let sentAny = false;
 
       try {
-        const streamResponse = await withRetry(() => withTimeout(ai.models.generateContentStream({
+        const streamResponse = await withTimeout(ai.models.generateContentStream({
           model: FAST_MODEL,
           contents,
           config: {
             systemInstruction: systemInstruction || defaultSys,
             thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
           }
-        }), 15000), 1);
+        }), 9000);
 
-        for await (const chunk of streamResponse) {
-          if (chunk.text) {
+        const iterator = streamResponse[Symbol.asyncIterator]();
+        while (true) {
+          const nextStep = await withTimeout(iterator.next(), sentAny ? 12000 : 9000);
+          if (nextStep.done) break;
+          const chunk = nextStep.value;
+          if (chunk?.text) {
             sentAny = true;
             sendEvent({ chunk: chunk.text });
           }
@@ -575,19 +596,30 @@ export function registerApiRoutes(app: Express) {
         apiError = classifyGeminiError(err);
       }
 
-      // If streaming failed before emitting text, attempt a non-streaming fallback once
-      if (!sentAny && (!apiError || apiError.retryable)) {
+      // If primary stream stalled or failed before emitting tokens, fall back immediately to LITE_MODEL (no thinking latency)
+      if (!sentAny && apiError?.code !== "API_KEY_INVALID" && apiError?.code !== "PERMISSION_DENIED") {
         try {
-          const fallbackRes = await withTimeout(ai.models.generateContent({
-            model: FAST_MODEL,
+          const liteStream = await withTimeout(ai.models.generateContentStream({
+            model: LITE_MODEL,
             contents,
             config: {
               systemInstruction: systemInstruction || defaultSys,
-              thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
+              thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL }
             }
-          }), 15000);
-          if (fallbackRes.text) {
-            sendEvent({ chunk: fallbackRes.text });
+          }), 8000);
+
+          const liteIter = liteStream[Symbol.asyncIterator]();
+          while (true) {
+            const nextStep = await withTimeout(liteIter.next(), sentAny ? 10000 : 8000);
+            if (nextStep.done) break;
+            const chunk = nextStep.value;
+            if (chunk?.text) {
+              sentAny = true;
+              sendEvent({ chunk: chunk.text });
+            }
+          }
+
+          if (sentAny) {
             sendEvent({ done: true });
             return res.end();
           }

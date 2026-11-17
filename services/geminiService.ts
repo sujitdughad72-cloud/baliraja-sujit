@@ -173,6 +173,16 @@ export const startAgriChat = (
     } catch (error: any) {
       clearTimeout(timeoutId);
       console.error("Agri chat stream error:", error);
+      if (error?.name === 'AbortError') {
+        const timeoutMsg = "⚠️ प्रतिसाद मिळण्यास विलंब होत आहे (Request Timeout). कृपया पुन्हा प्रयत्न करा.";
+        onError?.("TIMEOUT", "Request timed out after 25s");
+        onChunk(timeoutMsg);
+        return {
+          text: timeoutMsg,
+          errorCode: "TIMEOUT",
+          errorMessage: "Request timed out"
+        };
+      }
       const fallback = await sendMessage({ message });
       if (fallback.errorCode && fallback.errorMessage && onError) {
         onError(fallback.errorCode, fallback.errorMessage);
